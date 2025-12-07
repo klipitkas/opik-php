@@ -30,7 +30,7 @@ final class Dataset
             $items,
         );
 
-        $this->httpClient->post('v1/private/datasets/items', [
+        $this->httpClient->put('v1/private/datasets/items', [
             'dataset_name' => $this->name,
             'items' => \array_map(
                 static fn (DatasetItem $item) => $item->toArray(),
@@ -65,8 +65,7 @@ final class Dataset
      */
     public function getItems(int $page = 1, int $size = 100): array
     {
-        $response = $this->httpClient->get('v1/private/datasets/items', [
-            'dataset_name' => $this->name,
+        $response = $this->httpClient->get("v1/private/datasets/{$this->id}/items", [
             'page' => $page,
             'size' => $size,
         ]);

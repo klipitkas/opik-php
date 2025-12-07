@@ -32,11 +32,14 @@ final readonly class DatasetItem
      */
     public static function fromArray(array $data): self
     {
+        // Handle API response format where content is in 'data' field
+        $content = $data['data'] ?? [];
+        
         return new self(
             id: $data['id'] ?? null,
-            input: $data['input'] ?? null,
-            expectedOutput: $data['expected_output'] ?? null,
-            metadata: $data['metadata'] ?? null,
+            input: $content['input'] ?? null,
+            expectedOutput: $content['expected_output'] ?? null,
+            metadata: $content['metadata'] ?? null,
             traceId: $data['trace_id'] ?? null,
             spanId: $data['span_id'] ?? null,
             source: isset($data['source']) ? DatasetItemSource::from($data['source']) : DatasetItemSource::SDK,
@@ -48,31 +51,36 @@ final readonly class DatasetItem
      */
     public function toArray(): array
     {
-        $data = [
-            'id' => $this->id,
-            'source' => $this->source->value,
-        ];
-
+        // Build the data content (flexible schema)
+        $dataContent = [];
+        
         if ($this->input !== null) {
-            $data['input'] = $this->input;
+            $dataContent['input'] = $this->input;
         }
 
         if ($this->expectedOutput !== null) {
-            $data['expected_output'] = $this->expectedOutput;
+            $dataContent['expected_output'] = $this->expectedOutput;
         }
 
         if ($this->metadata !== null) {
-            $data['metadata'] = $this->metadata;
+            $dataContent['metadata'] = $this->metadata;
         }
 
+        // API format: data field contains the actual content
+        $apiData = [
+            'id' => $this->id,
+            'source' => $this->source->value,
+            'data' => $dataContent,
+        ];
+
         if ($this->traceId !== null) {
-            $data['trace_id'] = $this->traceId;
+            $apiData['trace_id'] = $this->traceId;
         }
 
         if ($this->spanId !== null) {
-            $data['span_id'] = $this->spanId;
+            $apiData['span_id'] = $this->spanId;
         }
 
-        return $data;
+        return $apiData;
     }
 }
