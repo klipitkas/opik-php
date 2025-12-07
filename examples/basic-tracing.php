@@ -8,9 +8,9 @@ use Opik\OpikClient;
 use Opik\Tracer\SpanType;
 use Opik\Tracer\Usage;
 
-$client = new OpikClient(
-    projectName: 'php-sdk-example',
-);
+// Configure for cloud usage via environment variables
+// Set: OPIK_API_KEY, OPIK_WORKSPACE, OPIK_PROJECT_NAME
+$client = new OpikClient();
 
 $trace = $client->trace(
     name: 'chat-completion-example',

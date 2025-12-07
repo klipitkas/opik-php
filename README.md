@@ -17,27 +17,34 @@ composer require comet-ml/opik
 
 ### Configuration
 
-The SDK can be configured via environment variables or constructor parameters:
+For **cloud usage** (recommended), set environment variables:
+
+```bash
+export OPIK_API_KEY=your-api-key
+export OPIK_WORKSPACE=your-workspace  
+export OPIK_PROJECT_NAME=your-project
+```
 
 ```php
 <?php
 
 use Opik\OpikClient;
 
-// Using environment variables
-// OPIK_API_KEY=your-api-key
-// OPIK_WORKSPACE=your-workspace
-// OPIK_PROJECT_NAME=your-project
+// Cloud configuration (recommended)
 $client = new OpikClient();
+```
 
-// Or using constructor parameters
+Alternative configuration methods:
+
+```php
+// Constructor parameters (not recommended for production)
 $client = new OpikClient(
     apiKey: 'your-api-key',
     workspace: 'your-workspace',
     projectName: 'my-project',
 );
 
-// For local development (no auth required)
+// Local development only (no auth required)
 $client = new OpikClient(
     baseUrl: 'http://localhost:5173/api/',
 );
@@ -351,13 +358,15 @@ $result = TrackHandler::track(
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPIK_API_KEY` | API key for authentication | - |
-| `OPIK_WORKSPACE` | Workspace name | - |
-| `OPIK_PROJECT_NAME` | Project name | `Default Project` |
-| `OPIK_URL_OVERRIDE` | Custom API URL | - |
-| `OPIK_DEBUG` | Enable debug mode | `false` |
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `OPIK_API_KEY` | API key for authentication | Yes (cloud) | - |
+| `OPIK_WORKSPACE` | Workspace name | Yes (cloud) | - |
+| `OPIK_PROJECT_NAME` | Project name | No | `Default Project` |
+| `OPIK_URL_OVERRIDE` | Custom API URL | No | - |
+| `OPIK_DEBUG` | Enable debug mode | No | `false` |
+
+**For cloud usage**, you must set `OPIK_API_KEY` and `OPIK_WORKSPACE`. Get these from your [Opik dashboard](https://www.comet.com/docs/opik/).
 
 ## API Reference
 
