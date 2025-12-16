@@ -422,6 +422,8 @@ $result = TrackHandler::track(
 - `getExperiment(name)` - Get an experiment by name
 - `getExperimentById(id)` - Get an experiment by ID
 - `getExperiments(datasetId?, page?, size?)` - List all experiments with pagination
+- `getExperimentsByName(name)` - Get all experiments with a given name
+- `getDatasetExperiments(datasetName, maxResults?)` - Get all experiments for a dataset
 - `createExperiment(name, datasetName, datasetId?)` - Create a new experiment
 - `updateExperiment(id, name?, metadata?)` - Update experiment metadata
 - `deleteExperiment(name)` - Delete an experiment by name
@@ -429,6 +431,7 @@ $result = TrackHandler::track(
 #### Prompts
 - `getPrompt(name)` - Get a prompt by name
 - `getPrompts(page?, size?)` - List all prompts with pagination
+- `searchPrompts(name?, page?, size?)` - Search prompts by name
 - `createPrompt(name, template, description?, metadata?)` - Create a new prompt
 - `getPromptHistory(name, page?, size?)` - Get all versions of a prompt
 - `deletePrompts(ids)` - Delete prompts in batch

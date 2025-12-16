@@ -296,6 +296,57 @@ final class OpikClient
     }
 
     /**
+     * Get all experiments with a given name.
+     *
+     * Note: Multiple experiments can have the same name.
+     *
+     * @param string $name The experiment name
+     * @return array<int, Experiment> List of experiments with the given name
+     * @throws \InvalidArgumentException If name is empty
+     */
+    public function getExperimentsByName(string $name): array
+    {
+        if (empty(trim($name))) {
+            throw new \InvalidArgumentException('Experiment name cannot be empty');
+        }
+
+        $response = $this->httpClient->get('v1/private/experiments', [
+            'name' => $name,
+        ]);
+
+        return \array_map(
+            fn (array $experiment) => new Experiment(
+                httpClient: $this->httpClient,
+                id: $experiment['id'],
+                name: $experiment['name'],
+                datasetName: $experiment['dataset_name'] ?? null,
+                datasetId: $experiment['dataset_id'] ?? null,
+            ),
+            $response['content'] ?? [],
+        );
+    }
+
+    /**
+     * Get all experiments for a dataset.
+     *
+     * @param string $datasetName The dataset name
+     * @param int $maxResults Maximum number of experiments to return
+     * @return array<int, Experiment> List of experiments for the dataset
+     * @throws \InvalidArgumentException If datasetName is empty
+     * @throws OpikException If the dataset is not found
+     */
+    public function getDatasetExperiments(string $datasetName, int $maxResults = 100): array
+    {
+        if (empty(trim($datasetName))) {
+            throw new \InvalidArgumentException('Dataset name cannot be empty');
+        }
+
+        $dataset = $this->getDataset($datasetName);
+
+        return $this->getExperiments($dataset->id, 1, $maxResults);
+    }
+
+    /**
      * Get all experiments with pagination.
      *
      * @param string|null $datasetId Filter by dataset ID
@@ -793,6 +844,37 @@ final class OpikClient
             'page' => $page,
             'size' => $size,
         ]);
+
+        return \array_map(
+            fn (array $prompt) => new Prompt(
+                httpClient: $this->httpClient,
+                id: $prompt['id'],
+                name: $prompt['name'],
+            ),
+            $response['content'] ?? [],
+        );
+    }
+
+    /**
+     * Search prompts with optional filtering.
+     *
+     * @param string|null $name Filter by prompt name (partial match)
+     * @param int $page Page number (1-based)
+     * @param int $size Page size
+     * @return array<int, Prompt> List of matching prompts
+     */
+    public function searchPrompts(?string $name = null, int $page = 1, int $size = 100): array
+    {
+        $query = [
+            'page' => $page,
+            'size' => $size,
+        ];
+
+        if ($name !== null) {
+            $query['name'] = $name;
+        }
+
+        $response = $this->httpClient->get('v1/private/prompts', $query);
 
         return \array_map(
             fn (array $prompt) => new Prompt(

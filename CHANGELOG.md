@@ -2,6 +2,15 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.5.0] - 2025-12-16
+
+### Added
+
+- `getExperimentsByName()` method for retrieving all experiments with a given name
+- `getDatasetExperiments()` method for retrieving all experiments for a dataset
+- `searchPrompts()` method for searching prompts by name
+- `Dataset::update()` method for bulk updating dataset items
+
 ## [0.4.0] - 2025-12-16
 
 ### Added
