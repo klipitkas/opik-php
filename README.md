@@ -477,6 +477,14 @@ $result = TrackHandler::track(
 - `SpanType::TOOL` - Tool/function call span
 - `SpanType::GUARDRAIL` - Guardrail check span
 
+### Dataset
+
+- `insert(items)` - Insert items into the dataset
+- `update(items)` - Update existing items (items must have IDs)
+- `delete(itemIds)` - Delete items by their IDs
+- `getItems(page?, size?)` - Get items with pagination
+- `clear()` - Delete all items from the dataset
+
 ### DatasetItem
 
 - `getContent()` - Get all data fields as array

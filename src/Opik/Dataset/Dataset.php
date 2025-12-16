@@ -44,6 +44,34 @@ final class Dataset
     }
 
     /**
+     * Update existing items in the dataset.
+     * You need to provide the full item object as it will override what has been supplied previously.
+     *
+     * @param array<int, DatasetItem>|array<int, array<string, mixed>> $items Items to update (must have IDs)
+     * @throws \InvalidArgumentException If any item is missing an ID
+     */
+    public function update(array $items): self
+    {
+        if ($items === []) {
+            return $this;
+        }
+
+        foreach ($items as $index => $item) {
+            $itemArray = $item instanceof DatasetItem ? ['id' => $item->id] : $item;
+            if (!isset($itemArray['id']) || empty($itemArray['id'])) {
+                throw new \InvalidArgumentException(
+                    "Dataset item at index {$index} is missing an 'id' field. " .
+                    'Update operations require all items to have IDs.',
+                );
+            }
+        }
+
+        return $this->insert($items);
+    }
+
+    /**
+     * Delete items from the dataset by their IDs.
+     *
      * @param array<int, string> $itemIds
      */
     public function delete(array $itemIds): self
