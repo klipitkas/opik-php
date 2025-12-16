@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Opik\Tests\Unit;
 
 use InvalidArgumentException;
-use Opik\Api\HttpClientInterface;
 use Opik\OpikClient;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

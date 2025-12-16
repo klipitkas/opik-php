@@ -1,7 +1,7 @@
 {
   "name": "klipitkas/opik-php",
   "description": "Opik PHP SDK - LLM observability and evaluation platform",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "library",
   "license": "Apache-2.0",
   "keywords": [
@@ -27,7 +27,7 @@
     "docs": "https://www.comet.com/docs/opik/"
   },
   "require": {
-    "php": "^8.4",
+    "php": "^8.1",
     "guzzlehttp/guzzle": "^7.9",
     "ramsey/uuid": "^4.7",
     "psr/log": "^3.0"
@@ -52,8 +52,12 @@
     "test:unit": "phpunit --testsuite=unit",
     "test:integration": "phpunit --testsuite=integration",
     "analyse": "phpstan analyse",
-    "cs-fix": "php-cs-fixer fix",
-    "cs-check": "php-cs-fixer fix --dry-run --diff"
+    "format": "php-cs-fixer fix",
+    "format:check": "php-cs-fixer fix --dry-run --diff",
+    "lint": [
+      "@analyse",
+      "@format:check"
+    ]
   },
   "config": {
     "sort-packages": true,

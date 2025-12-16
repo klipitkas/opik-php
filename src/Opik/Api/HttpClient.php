@@ -34,6 +34,7 @@ final class HttpClient implements HttpClientInterface
 
     /**
      * @param array<string, mixed> $data
+     *
      * @return array<string, mixed>
      */
     public function post(string $endpoint, array $data = []): array
@@ -43,6 +44,7 @@ final class HttpClient implements HttpClientInterface
 
     /**
      * @param array<string, mixed> $query
+     *
      * @return array<string, mixed>
      */
     public function get(string $endpoint, array $query = []): array
@@ -52,6 +54,7 @@ final class HttpClient implements HttpClientInterface
 
     /**
      * @param array<string, mixed> $data
+     *
      * @return array<string, mixed>
      */
     public function put(string $endpoint, array $data = []): array
@@ -61,6 +64,7 @@ final class HttpClient implements HttpClientInterface
 
     /**
      * @param array<string, mixed> $data
+     *
      * @return array<string, mixed>
      */
     public function patch(string $endpoint, array $data = []): array
@@ -76,6 +80,7 @@ final class HttpClient implements HttpClientInterface
     /**
      * @param array<string, mixed> $data
      * @param array<string, mixed> $query
+     *
      * @return array<string, mixed>
      */
     private function request(
@@ -94,7 +99,7 @@ final class HttpClient implements HttpClientInterface
                 if ($data !== []) {
                     if ($this->config->enableCompression) {
                         $jsonData = JsonEncoder::encode($data);
-                        $compressed = \gzencode($jsonData, 6);
+                        $compressed = gzencode($jsonData, 6);
 
                         if ($compressed !== false) {
                             $options[RequestOptions::BODY] = $compressed;
@@ -193,7 +198,7 @@ final class HttpClient implements HttpClientInterface
     private function sleep(int $attempt): void
     {
         $delayMs = Config::RETRY_BASE_DELAY_MS * (2 ** ($attempt - 1));
-        $jitter = \random_int(0, (int) ($delayMs * 0.1));
+        $jitter = random_int(0, (int) ($delayMs * 0.1));
         $totalDelayMs = $delayMs + $jitter;
 
         $this->logger->debug('Retry backoff', [
@@ -203,7 +208,7 @@ final class HttpClient implements HttpClientInterface
             'total_delay_ms' => $totalDelayMs,
         ]);
 
-        \usleep($totalDelayMs * 1000);
+        usleep($totalDelayMs * 1000);
     }
 
     private function createApiException(?RequestException $e): ApiException

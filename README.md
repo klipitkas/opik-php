@@ -4,7 +4,7 @@ The official PHP SDK for [Opik](https://www.comet.com/docs/opik/) - an LLM obser
 
 ## Requirements
 
-- PHP 8.4 or higher
+- PHP 8.1 or higher
 - Composer
 
 ## Installation

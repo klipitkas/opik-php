@@ -18,7 +18,8 @@ final class Prompt
         private readonly HttpClientInterface $httpClient,
         public readonly string $id,
         public readonly string $name,
-    ) {}
+    ) {
+    }
 
     public function getLatestVersion(): PromptVersion
     {

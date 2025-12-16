@@ -6,12 +6,18 @@ namespace Opik\Dataset;
 
 use Opik\Utils\IdGenerator;
 
-final readonly class DatasetItem
+final class DatasetItem
 {
-    public string $id;
+    public readonly string $id;
 
     /** @var array<string, mixed> */
-    private array $data;
+    private readonly array $data;
+
+    public readonly ?string $traceId;
+
+    public readonly ?string $spanId;
+
+    public readonly DatasetItemSource $source;
 
     /**
      * Create a dataset item with flexible schema.
@@ -29,11 +35,14 @@ final readonly class DatasetItem
         ?array $input = null,
         ?array $expectedOutput = null,
         ?array $metadata = null,
-        public ?string $traceId = null,
-        public ?string $spanId = null,
-        public DatasetItemSource $source = DatasetItemSource::SDK,
+        ?string $traceId = null,
+        ?string $spanId = null,
+        DatasetItemSource $source = DatasetItemSource::SDK,
         array $data = [],
     ) {
+        $this->traceId = $traceId;
+        $this->spanId = $spanId;
+        $this->source = $source;
         $this->id = $id ?? IdGenerator::uuid();
 
         // Build the data array from explicit fields and arbitrary data
@@ -80,7 +89,8 @@ final readonly class DatasetItem
     public function getInput(): ?array
     {
         $input = $this->data['input'] ?? null;
-        return is_array($input) ? $input : null;
+
+        return \is_array($input) ? $input : null;
     }
 
     /**
@@ -91,7 +101,8 @@ final readonly class DatasetItem
     public function getExpectedOutput(): ?array
     {
         $output = $this->data['expected_output'] ?? null;
-        return is_array($output) ? $output : null;
+
+        return \is_array($output) ? $output : null;
     }
 
     /**
@@ -102,7 +113,8 @@ final readonly class DatasetItem
     public function getMetadata(): ?array
     {
         $metadata = $this->data['metadata'] ?? null;
-        return is_array($metadata) ? $metadata : null;
+
+        return \is_array($metadata) ? $metadata : null;
     }
 
     /**
@@ -118,7 +130,7 @@ final readonly class DatasetItem
             traceId: $data['trace_id'] ?? null,
             spanId: $data['span_id'] ?? null,
             source: isset($data['source']) ? DatasetItemSource::from($data['source']) : DatasetItemSource::SDK,
-            data: is_array($content) ? $content : [],
+            data: \is_array($content) ? $content : [],
         );
     }
 

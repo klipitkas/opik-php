@@ -116,6 +116,7 @@ final class Trace
      * @param mixed $input Optional input data for the span
      * @param array<string, mixed>|null $metadata Optional metadata
      * @param array<int, string>|null $tags Optional tags
+     *
      * @return Span The created span
      */
     public function span(
@@ -148,6 +149,7 @@ final class Trace
      * @param array<int, string>|null $tags Additional tags (merged with existing)
      * @param DateTimeImmutable|null $endTime End time of the trace
      * @param ErrorInfo|null $errorInfo Error information if the operation failed
+     *
      * @return self For method chaining
      */
     public function update(
@@ -167,11 +169,11 @@ final class Trace
         }
 
         if ($metadata !== null) {
-            $this->metadata = \array_merge($this->metadata, $metadata);
+            $this->metadata = array_merge($this->metadata, $metadata);
         }
 
         if ($tags !== null) {
-            $this->tags = \array_merge($this->tags, $tags);
+            $this->tags = array_merge($this->tags, $tags);
         }
 
         if ($endTime !== null) {
@@ -194,6 +196,7 @@ final class Trace
      * after the first call.
      *
      * @param DateTimeImmutable|null $endTime Optional end time (current time if not provided)
+     *
      * @return self For method chaining
      */
     public function end(?DateTimeImmutable $endTime = null): self
@@ -216,6 +219,7 @@ final class Trace
      * @param float|string $value Numeric score value or category name
      * @param string|null $reason Optional explanation for the score
      * @param string|null $categoryName Optional category name (for categorical scores)
+     *
      * @return self For method chaining
      */
     public function logFeedbackScore(
@@ -243,7 +247,7 @@ final class Trace
 
         $this->batchQueue->enqueue(new Message(
             type: MessageType::ADD_FEEDBACK_SCORE,
-            data: \array_merge($data, ['trace_id' => $this->id]),
+            data: array_merge($data, ['trace_id' => $this->id]),
         ));
 
         return $this;

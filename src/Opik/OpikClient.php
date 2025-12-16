@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Opik;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Opik\Api\HttpClient;
 use Opik\Api\HttpClientInterface;
 use Opik\Config\Config;
@@ -59,6 +60,7 @@ final class OpikClient
      * @param string|null $baseUrl API base URL (defaults to cloud or OPIK_URL_OVERRIDE env var)
      * @param bool $debug Enable debug mode
      * @param LoggerInterface|null $logger PSR-3 logger for debug output
+     *
      * @throws ConfigurationException If required configuration is missing
      */
     public function __construct(
@@ -94,8 +96,10 @@ final class OpikClient
      * @param array<int, string>|null $tags List of tags
      * @param DateTimeImmutable|null $startTime Start time (current time if not provided)
      * @param string|null $threadId Thread ID for grouping related traces
+     *
+     * @throws InvalidArgumentException If name is empty
+     *
      * @return Trace The created trace
-     * @throws \InvalidArgumentException If name is empty
      */
     public function trace(
         string $name,
@@ -108,7 +112,7 @@ final class OpikClient
         ?string $threadId = null,
     ): Trace {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Trace name cannot be empty');
+            throw new InvalidArgumentException('Trace name cannot be empty');
         }
 
         return new Trace(
@@ -137,8 +141,10 @@ final class OpikClient
      * @param array<string, mixed>|null $metadata Metadata key-value pairs
      * @param array<int, string>|null $tags List of tags
      * @param DateTimeImmutable|null $startTime Start time (current time if not provided)
+     *
+     * @throws InvalidArgumentException If name or traceId is empty
+     *
      * @return Span The created span
-     * @throws \InvalidArgumentException If name or traceId is empty
      */
     public function span(
         string $name,
@@ -153,11 +159,11 @@ final class OpikClient
         ?DateTimeImmutable $startTime = null,
     ): Span {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Span name cannot be empty');
+            throw new InvalidArgumentException('Span name cannot be empty');
         }
 
         if (empty(trim($traceId))) {
-            throw new \InvalidArgumentException('Trace ID cannot be empty');
+            throw new InvalidArgumentException('Trace ID cannot be empty');
         }
 
         return new Span(
@@ -179,14 +185,16 @@ final class OpikClient
      * Get an existing dataset by name.
      *
      * @param string $name The dataset name
-     * @return Dataset The dataset
-     * @throws \InvalidArgumentException If name is empty
+     *
+     * @throws InvalidArgumentException If name is empty
      * @throws OpikException If the dataset is not found
+     *
+     * @return Dataset The dataset
      */
     public function getDataset(string $name): Dataset
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Dataset name cannot be empty');
+            throw new InvalidArgumentException('Dataset name cannot be empty');
         }
 
         $response = $this->httpClient->get('v1/private/datasets', [
@@ -214,13 +222,15 @@ final class OpikClient
      *
      * @param string $name The dataset name
      * @param string|null $description Optional description
+     *
+     * @throws InvalidArgumentException If name is empty
+     *
      * @return Dataset The created dataset
-     * @throws \InvalidArgumentException If name is empty
      */
     public function createDataset(string $name, ?string $description = null): Dataset
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Dataset name cannot be empty');
+            throw new InvalidArgumentException('Dataset name cannot be empty');
         }
 
         $id = IdGenerator::uuid();
@@ -244,13 +254,15 @@ final class OpikClient
      *
      * @param string $name The dataset name
      * @param string|null $description Optional description (used only when creating)
+     *
+     * @throws InvalidArgumentException If name is empty
+     *
      * @return Dataset The dataset
-     * @throws \InvalidArgumentException If name is empty
      */
     public function getOrCreateDataset(string $name, ?string $description = null): Dataset
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Dataset name cannot be empty');
+            throw new InvalidArgumentException('Dataset name cannot be empty');
         }
 
         try {
@@ -264,14 +276,16 @@ final class OpikClient
      * Get an existing experiment by name.
      *
      * @param string $name The experiment name
-     * @return Experiment The experiment
-     * @throws \InvalidArgumentException If name is empty
+     *
+     * @throws InvalidArgumentException If name is empty
      * @throws OpikException If the experiment is not found
+     *
+     * @return Experiment The experiment
      */
     public function getExperiment(string $name): Experiment
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Experiment name cannot be empty');
+            throw new InvalidArgumentException('Experiment name cannot be empty');
         }
 
         $response = $this->httpClient->get('v1/private/experiments', [
@@ -301,20 +315,22 @@ final class OpikClient
      * Note: Multiple experiments can have the same name.
      *
      * @param string $name The experiment name
+     *
+     * @throws InvalidArgumentException If name is empty
+     *
      * @return array<int, Experiment> List of experiments with the given name
-     * @throws \InvalidArgumentException If name is empty
      */
     public function getExperimentsByName(string $name): array
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Experiment name cannot be empty');
+            throw new InvalidArgumentException('Experiment name cannot be empty');
         }
 
         $response = $this->httpClient->get('v1/private/experiments', [
             'name' => $name,
         ]);
 
-        return \array_map(
+        return array_map(
             fn (array $experiment) => new Experiment(
                 httpClient: $this->httpClient,
                 id: $experiment['id'],
@@ -331,14 +347,16 @@ final class OpikClient
      *
      * @param string $datasetName The dataset name
      * @param int $maxResults Maximum number of experiments to return
-     * @return array<int, Experiment> List of experiments for the dataset
-     * @throws \InvalidArgumentException If datasetName is empty
+     *
+     * @throws InvalidArgumentException If datasetName is empty
      * @throws OpikException If the dataset is not found
+     *
+     * @return array<int, Experiment> List of experiments for the dataset
      */
     public function getDatasetExperiments(string $datasetName, int $maxResults = 100): array
     {
         if (empty(trim($datasetName))) {
-            throw new \InvalidArgumentException('Dataset name cannot be empty');
+            throw new InvalidArgumentException('Dataset name cannot be empty');
         }
 
         $dataset = $this->getDataset($datasetName);
@@ -352,11 +370,12 @@ final class OpikClient
      * @param string|null $datasetId Filter by dataset ID
      * @param int $page Page number (1-based)
      * @param int $size Page size
+     *
      * @return array<int, Experiment> List of experiments
      */
     public function getExperiments(?string $datasetId = null, int $page = 1, int $size = 100): array
     {
-        $query = [ 'page' => $page, 'size' => $size ];
+        $query = ['page' => $page, 'size' => $size];
 
         if ($datasetId !== null) {
             $query['dataset_id'] = $datasetId;
@@ -364,7 +383,7 @@ final class OpikClient
 
         $response = $this->httpClient->get('v1/private/experiments', $query);
 
-        return \array_map(
+        return array_map(
             fn (array $experiment) => new Experiment(
                 httpClient: $this->httpClient,
                 id: $experiment['id'],
@@ -382,17 +401,19 @@ final class OpikClient
      * @param string $name The experiment name
      * @param string $datasetName The name of the dataset to associate
      * @param string|null $datasetId Optional dataset ID
+     *
+     * @throws InvalidArgumentException If name or datasetName is empty
+     *
      * @return Experiment The created experiment
-     * @throws \InvalidArgumentException If name or datasetName is empty
      */
     public function createExperiment(string $name, string $datasetName, ?string $datasetId = null): Experiment
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Experiment name cannot be empty');
+            throw new InvalidArgumentException('Experiment name cannot be empty');
         }
 
         if (empty(trim($datasetName))) {
-            throw new \InvalidArgumentException('Dataset name is required to create an experiment');
+            throw new InvalidArgumentException('Dataset name is required to create an experiment');
         }
 
         $id = IdGenerator::uuid();
@@ -422,14 +443,16 @@ final class OpikClient
      * Get an existing prompt by name.
      *
      * @param string $name The prompt name
-     * @return Prompt The prompt
-     * @throws \InvalidArgumentException If name is empty
+     *
+     * @throws InvalidArgumentException If name is empty
      * @throws OpikException If the prompt is not found
+     *
+     * @return Prompt The prompt
      */
     public function getPrompt(string $name): Prompt
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Prompt name cannot be empty');
+            throw new InvalidArgumentException('Prompt name cannot be empty');
         }
 
         $response = $this->httpClient->get('v1/private/prompts', [
@@ -458,8 +481,10 @@ final class OpikClient
      * @param string $template The prompt template
      * @param string|null $description Optional description
      * @param array<string, mixed>|null $metadata Optional metadata
+     *
+     * @throws InvalidArgumentException If name or template is empty
+     *
      * @return Prompt The created prompt
-     * @throws \InvalidArgumentException If name or template is empty
      */
     public function createPrompt(
         string $name,
@@ -468,11 +493,11 @@ final class OpikClient
         ?array $metadata = null,
     ): Prompt {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Prompt name cannot be empty');
+            throw new InvalidArgumentException('Prompt name cannot be empty');
         }
 
         if (empty(trim($template))) {
-            throw new \InvalidArgumentException('Prompt template cannot be empty');
+            throw new InvalidArgumentException('Prompt template cannot be empty');
         }
 
         $id = IdGenerator::uuid();
@@ -503,13 +528,14 @@ final class OpikClient
      * Delete a dataset by name.
      *
      * @param string $name The dataset name
-     * @throws \InvalidArgumentException If name is empty
+     *
+     * @throws InvalidArgumentException If name is empty
      * @throws OpikException If the dataset is not found
      */
     public function deleteDataset(string $name): void
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Dataset name cannot be empty');
+            throw new InvalidArgumentException('Dataset name cannot be empty');
         }
 
         $dataset = $this->getDataset($name);
@@ -520,13 +546,14 @@ final class OpikClient
      * Delete an experiment by name.
      *
      * @param string $name The experiment name
-     * @throws \InvalidArgumentException If name is empty
+     *
+     * @throws InvalidArgumentException If name is empty
      * @throws OpikException If the experiment is not found
      */
     public function deleteExperiment(string $name): void
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Experiment name cannot be empty');
+            throw new InvalidArgumentException('Experiment name cannot be empty');
         }
 
         $experiment = $this->getExperiment($name);
@@ -537,12 +564,13 @@ final class OpikClient
      * Delete experiments by IDs.
      *
      * @param array<int, string> $ids List of experiment IDs to delete
-     * @throws \InvalidArgumentException If ids array is empty
+     *
+     * @throws InvalidArgumentException If ids array is empty
      */
     public function deleteExperiments(array $ids): void
     {
         if (empty($ids)) {
-            throw new \InvalidArgumentException('Experiment IDs array cannot be empty');
+            throw new InvalidArgumentException('Experiment IDs array cannot be empty');
         }
 
         $this->httpClient->post('v1/private/experiments/delete', ['ids' => $ids]);
@@ -552,13 +580,15 @@ final class OpikClient
      * Get trace content by ID.
      *
      * @param string $traceId The trace ID
+     *
+     * @throws InvalidArgumentException If traceId is empty
+     *
      * @return array<string, mixed> The trace data
-     * @throws \InvalidArgumentException If traceId is empty
      */
     public function getTraceContent(string $traceId): array
     {
         if (empty(trim($traceId))) {
-            throw new \InvalidArgumentException('Trace ID cannot be empty');
+            throw new InvalidArgumentException('Trace ID cannot be empty');
         }
 
         return $this->httpClient->get("v1/private/traces/{$traceId}");
@@ -568,13 +598,15 @@ final class OpikClient
      * Get span content by ID.
      *
      * @param string $spanId The span ID
+     *
+     * @throws InvalidArgumentException If spanId is empty
+     *
      * @return array<string, mixed> The span data
-     * @throws \InvalidArgumentException If spanId is empty
      */
     public function getSpanContent(string $spanId): array
     {
         if (empty(trim($spanId))) {
-            throw new \InvalidArgumentException('Span ID cannot be empty');
+            throw new InvalidArgumentException('Span ID cannot be empty');
         }
 
         return $this->httpClient->get("v1/private/spans/{$spanId}");
@@ -587,6 +619,7 @@ final class OpikClient
      * @param string|null $filter OQL filter expression
      * @param int $page Page number (1-based)
      * @param int $size Page size
+     *
      * @return array<string, mixed> Search results with 'content' and pagination info
      */
     public function searchTraces(
@@ -621,6 +654,7 @@ final class OpikClient
      * @param string|null $filter OQL filter expression
      * @param int $page Page number (1-based)
      * @param int $size Page size
+     *
      * @return array<string, mixed> Search results with 'content' and pagination info
      */
     public function searchSpans(
@@ -661,7 +695,7 @@ final class OpikClient
     {
         $projectName = $this->config->projectName ?? 'Default Project';
 
-        $formattedScores = \array_map(function (array $score) use ($projectName): array {
+        $formattedScores = array_map(function (array $score) use ($projectName): array {
             $data = [
                 'id' => IdGenerator::uuid(),
                 'trace_id' => $score['trace_id'],
@@ -695,7 +729,7 @@ final class OpikClient
     {
         $projectName = $this->config->projectName ?? 'Default Project';
 
-        $formattedScores = \array_map(function (array $score) use ($projectName): array {
+        $formattedScores = array_map(function (array $score) use ($projectName): array {
             $data = [
                 'id' => IdGenerator::uuid(),
                 'span_id' => $score['span_id'],
@@ -726,7 +760,8 @@ final class OpikClient
      * @param string $id The experiment ID
      * @param string|null $name New name for the experiment
      * @param array<string, mixed>|null $metadata Metadata to update
-     * @throws \InvalidArgumentException If id is empty
+     *
+     * @throws InvalidArgumentException If id is empty
      */
     public function updateExperiment(
         string $id,
@@ -734,7 +769,7 @@ final class OpikClient
         ?array $metadata = null,
     ): void {
         if (empty(trim($id))) {
-            throw new \InvalidArgumentException('Experiment ID cannot be empty');
+            throw new InvalidArgumentException('Experiment ID cannot be empty');
         }
 
         $data = [];
@@ -752,14 +787,16 @@ final class OpikClient
      * Get an experiment by ID.
      *
      * @param string $id The experiment ID
-     * @return Experiment The experiment
-     * @throws \InvalidArgumentException If id is empty
+     *
+     * @throws InvalidArgumentException If id is empty
      * @throws OpikException If the experiment is not found
+     *
+     * @return Experiment The experiment
      */
     public function getExperimentById(string $id): Experiment
     {
         if (empty(trim($id))) {
-            throw new \InvalidArgumentException('Experiment ID cannot be empty');
+            throw new InvalidArgumentException('Experiment ID cannot be empty');
         }
 
         $response = $this->httpClient->get("v1/private/experiments/{$id}");
@@ -777,13 +814,15 @@ final class OpikClient
      * Get project by ID.
      *
      * @param string $id The project ID
+     *
+     * @throws InvalidArgumentException If id is empty
+     *
      * @return array<string, mixed> The project data
-     * @throws \InvalidArgumentException If id is empty
      */
     public function getProject(string $id): array
     {
         if (empty(trim($id))) {
-            throw new \InvalidArgumentException('Project ID cannot be empty');
+            throw new InvalidArgumentException('Project ID cannot be empty');
         }
 
         return $this->httpClient->get("v1/private/projects/{$id}");
@@ -793,6 +832,7 @@ final class OpikClient
      * Get the URL for a project in the current workspace.
      *
      * @param string|null $projectName Project name (uses default if not provided)
+     *
      * @return string The project URL
      */
     public function getProjectUrl(?string $projectName = null): string
@@ -811,6 +851,7 @@ final class OpikClient
      *
      * @param int $page Page number (1-based)
      * @param int $size Page size
+     *
      * @return array<int, Dataset> List of datasets
      */
     public function getDatasets(int $page = 1, int $size = 100): array
@@ -820,7 +861,7 @@ final class OpikClient
             'size' => $size,
         ]);
 
-        return \array_map(
+        return array_map(
             fn (array $dataset) => new Dataset(
                 httpClient: $this->httpClient,
                 id: $dataset['id'],
@@ -836,6 +877,7 @@ final class OpikClient
      *
      * @param int $page Page number (1-based)
      * @param int $size Page size
+     *
      * @return array<int, Prompt> List of prompts
      */
     public function getPrompts(int $page = 1, int $size = 100): array
@@ -845,7 +887,7 @@ final class OpikClient
             'size' => $size,
         ]);
 
-        return \array_map(
+        return array_map(
             fn (array $prompt) => new Prompt(
                 httpClient: $this->httpClient,
                 id: $prompt['id'],
@@ -861,6 +903,7 @@ final class OpikClient
      * @param string|null $name Filter by prompt name (partial match)
      * @param int $page Page number (1-based)
      * @param int $size Page size
+     *
      * @return array<int, Prompt> List of matching prompts
      */
     public function searchPrompts(?string $name = null, int $page = 1, int $size = 100): array
@@ -876,7 +919,7 @@ final class OpikClient
 
         $response = $this->httpClient->get('v1/private/prompts', $query);
 
-        return \array_map(
+        return array_map(
             fn (array $prompt) => new Prompt(
                 httpClient: $this->httpClient,
                 id: $prompt['id'],
@@ -890,12 +933,13 @@ final class OpikClient
      * Delete prompts in batch.
      *
      * @param array<int, string> $ids List of prompt IDs to delete
-     * @throws \InvalidArgumentException If ids array is empty
+     *
+     * @throws InvalidArgumentException If ids array is empty
      */
     public function deletePrompts(array $ids): void
     {
         if (empty($ids)) {
-            throw new \InvalidArgumentException('Prompt IDs array cannot be empty');
+            throw new InvalidArgumentException('Prompt IDs array cannot be empty');
         }
 
         $this->httpClient->post('v1/private/prompts/delete', ['ids' => $ids]);
@@ -907,14 +951,16 @@ final class OpikClient
      * @param string $name The prompt name
      * @param int $page Page number (1-based)
      * @param int $size Page size
-     * @return array<int, array<string, mixed>> List of prompt versions
-     * @throws \InvalidArgumentException If name is empty
+     *
+     * @throws InvalidArgumentException If name is empty
      * @throws OpikException If the prompt is not found
+     *
+     * @return array<int, array<string, mixed>> List of prompt versions
      */
     public function getPromptHistory(string $name, int $page = 1, int $size = 100): array
     {
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Prompt name cannot be empty');
+            throw new InvalidArgumentException('Prompt name cannot be empty');
         }
 
         $prompt = $this->getPrompt($name);
@@ -932,16 +978,17 @@ final class OpikClient
      *
      * @param string $traceId The trace ID
      * @param string $name The feedback score name
-     * @throws \InvalidArgumentException If traceId or name is empty
+     *
+     * @throws InvalidArgumentException If traceId or name is empty
      */
     public function deleteTraceFeedbackScore(string $traceId, string $name): void
     {
         if (empty(trim($traceId))) {
-            throw new \InvalidArgumentException('Trace ID cannot be empty');
+            throw new InvalidArgumentException('Trace ID cannot be empty');
         }
 
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Feedback score name cannot be empty');
+            throw new InvalidArgumentException('Feedback score name cannot be empty');
         }
 
         $this->httpClient->post("v1/private/traces/{$traceId}/feedback-scores/delete", ['name' => $name]);
@@ -952,16 +999,17 @@ final class OpikClient
      *
      * @param string $spanId The span ID
      * @param string $name The feedback score name
-     * @throws \InvalidArgumentException If spanId or name is empty
+     *
+     * @throws InvalidArgumentException If spanId or name is empty
      */
     public function deleteSpanFeedbackScore(string $spanId, string $name): void
     {
         if (empty(trim($spanId))) {
-            throw new \InvalidArgumentException('Span ID cannot be empty');
+            throw new InvalidArgumentException('Span ID cannot be empty');
         }
 
         if (empty(trim($name))) {
-            throw new \InvalidArgumentException('Feedback score name cannot be empty');
+            throw new InvalidArgumentException('Feedback score name cannot be empty');
         }
 
         $this->httpClient->post("v1/private/spans/{$spanId}/feedback-scores/delete", ['name' => $name]);

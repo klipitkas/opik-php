@@ -9,6 +9,7 @@ use Opik\Config\Config;
 use Opik\Utils\JsonEncoder;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Throwable;
 
 final class BatchQueue
 {
@@ -37,7 +38,7 @@ final class BatchQueue
     ) {
         unset($config);
         $this->logger = $logger ?? new NullLogger();
-        self::$instances[\spl_object_id($this)] = $this;
+        self::$instances[spl_object_id($this)] = $this;
         self::registerGlobalShutdown();
     }
 
@@ -91,7 +92,7 @@ final class BatchQueue
             return;
         }
 
-        $traces = \array_map(
+        $traces = array_map(
             static fn (Message $m) => $m->data,
             $this->traceMessages,
         );
@@ -99,7 +100,7 @@ final class BatchQueue
         try {
             $this->httpClient->post('v1/private/traces/batch', ['traces' => $traces]);
             $this->logger->debug('Flushed traces', ['count' => \count($traces)]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Failed to flush traces', [
                 'count' => \count($traces),
                 'error' => $e->getMessage(),
@@ -115,7 +116,7 @@ final class BatchQueue
             return;
         }
 
-        $spans = \array_map(
+        $spans = array_map(
             static fn (Message $m) => $m->data,
             $this->spanMessages,
         );
@@ -123,7 +124,7 @@ final class BatchQueue
         try {
             $this->httpClient->post('v1/private/spans/batch', ['spans' => $spans]);
             $this->logger->debug('Flushed spans', ['count' => \count($spans)]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Failed to flush spans', [
                 'count' => \count($spans),
                 'error' => $e->getMessage(),
@@ -139,7 +140,7 @@ final class BatchQueue
             return;
         }
 
-        $scores = \array_map(
+        $scores = array_map(
             static fn (Message $m) => $m->data,
             $this->feedbackScoreMessages,
         );
@@ -147,7 +148,7 @@ final class BatchQueue
         try {
             $this->httpClient->put('v1/private/spans/feedback-scores', ['scores' => $scores]);
             $this->logger->debug('Flushed feedback scores', ['count' => \count($scores)]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Failed to flush feedback scores', [
                 'count' => \count($scores),
                 'error' => $e->getMessage(),
@@ -165,7 +166,7 @@ final class BatchQueue
 
         self::$globalShutdownRegistered = true;
 
-        \register_shutdown_function(static function (): void {
+        register_shutdown_function(static function (): void {
             foreach (self::$instances as $instance) {
                 if (!$instance->isEmpty()) {
                     $instance->flush();
@@ -176,6 +177,6 @@ final class BatchQueue
 
     public function __destruct()
     {
-        unset(self::$instances[\spl_object_id($this)]);
+        unset(self::$instances[spl_object_id($this)]);
     }
 }

@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 namespace Opik\Tracer;
 
-final readonly class Usage
+final class Usage
 {
+    public readonly ?int $promptTokens;
+
+    public readonly ?int $completionTokens;
+
+    public readonly ?int $totalTokens;
+
     public function __construct(
-        public ?int $promptTokens = null,
-        public ?int $completionTokens = null,
-        public ?int $totalTokens = null,
-    ) {}
+        ?int $promptTokens = null,
+        ?int $completionTokens = null,
+        ?int $totalTokens = null,
+    ) {
+        $this->promptTokens = $promptTokens;
+        $this->completionTokens = $completionTokens;
+        $this->totalTokens = $totalTokens;
+    }
 
     /**
      * @return array<string, int>

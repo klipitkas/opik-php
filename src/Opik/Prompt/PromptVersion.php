@@ -4,18 +4,35 @@ declare(strict_types=1);
 
 namespace Opik\Prompt;
 
-final readonly class PromptVersion
+final class PromptVersion
 {
+    public readonly string $id;
+
+    public readonly string $promptId;
+
+    public readonly string $commit;
+
+    /** @var string|array<int, array<string, mixed>> */
+    public readonly string|array $template;
+
+    public readonly PromptType $type;
+
     /**
      * @param string|array<int, array<string, mixed>> $template
      */
     public function __construct(
-        public string $id,
-        public string $promptId,
-        public string $commit,
-        public string|array $template,
-        public PromptType $type = PromptType::TEXT,
-    ) {}
+        string $id,
+        string $promptId,
+        string $commit,
+        string|array $template,
+        PromptType $type = PromptType::TEXT,
+    ) {
+        $this->id = $id;
+        $this->promptId = $promptId;
+        $this->commit = $commit;
+        $this->template = $template;
+        $this->type = $type;
+    }
 
     /**
      * @param array<string, mixed> $data
@@ -51,7 +68,7 @@ final readonly class PromptVersion
         $result = $template;
 
         foreach ($variables as $key => $value) {
-            $result = \str_replace(
+            $result = str_replace(
                 ["{{$key}}", "{{ $key }}"],
                 (string) $value,
                 $result,
@@ -64,11 +81,12 @@ final readonly class PromptVersion
     /**
      * @param array<int, array<string, mixed>> $messages
      * @param array<string, mixed> $variables
+     *
      * @return array<int, array<string, mixed>>
      */
     private function formatChat(array $messages, array $variables): array
     {
-        return \array_map(
+        return array_map(
             function (array $message) use ($variables): array {
                 if (isset($message['content']) && \is_string($message['content'])) {
                     $message['content'] = $this->formatString($message['content'], $variables);

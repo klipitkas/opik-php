@@ -31,6 +31,7 @@ final class DateTimeHelper
      * Uses RFC3339 extended format with microseconds for maximum precision.
      *
      * @param DateTimeInterface $dateTime The date/time to format
+     *
      * @return string The formatted date/time string
      */
     public static function format(DateTimeInterface $dateTime): string

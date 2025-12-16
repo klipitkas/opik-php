@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# PHP SDK Pre-commit hook
+# Runs formatting and tests before allowing commit
+
+cd "$(dirname "$0")/../.."
+
+echo "Running PHP CS Fixer..."
+composer format
+if [ $? -ne 0 ]; then
+    echo "PHP CS Fixer failed. Please fix the errors and try again."
+    exit 1
+fi
+
+# Stage any files that were auto-formatted
+git add -u
+
+echo "Running tests..."
+composer test
+if [ $? -ne 0 ]; then
+    echo "Tests failed. Please fix the errors and try again."
+    exit 1
+fi
+
+echo "Pre-commit checks passed!"

@@ -6,22 +6,36 @@ namespace Opik\Experiment;
 
 use Opik\Utils\IdGenerator;
 
-final readonly class ExperimentItem
+final class ExperimentItem
 {
-    public string $id;
+    public readonly string $id;
+
+    public readonly string $datasetItemId;
+
+    public readonly ?string $traceId;
+
+    /** @var array<string, mixed>|null */
+    public readonly ?array $output;
+
+    /** @var array<int, array<string, mixed>>|null */
+    public readonly ?array $feedbackScores;
 
     /**
      * @param array<string, mixed>|null $output
      * @param array<int, array<string, mixed>>|null $feedbackScores
      */
     public function __construct(
-        public string $datasetItemId,
-        public ?string $traceId = null,
+        string $datasetItemId,
+        ?string $traceId = null,
         ?string $id = null,
-        public ?array $output = null,
-        public ?array $feedbackScores = null,
+        ?array $output = null,
+        ?array $feedbackScores = null,
     ) {
+        $this->datasetItemId = $datasetItemId;
+        $this->traceId = $traceId;
         $this->id = $id ?? IdGenerator::uuid();
+        $this->output = $output;
+        $this->feedbackScores = $feedbackScores;
     }
 
     /**

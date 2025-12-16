@@ -14,7 +14,8 @@ final class Experiment
         public readonly string $name,
         public readonly ?string $datasetName = null,
         public readonly ?string $datasetId = null,
-    ) {}
+    ) {
+    }
 
     /**
      * @param array<int, ExperimentItem> $items
@@ -22,8 +23,8 @@ final class Experiment
     public function logItems(array $items): self
     {
         $this->httpClient->post('v1/private/experiments/items', [
-            'experiment_items' => \array_map(
-                fn (ExperimentItem $item) => \array_merge(
+            'experiment_items' => array_map(
+                fn (ExperimentItem $item) => array_merge(
                     $item->toArray(),
                     ['experiment_id' => $this->id],
                 ),
@@ -44,7 +45,7 @@ final class Experiment
             'size' => $size,
         ]);
 
-        return \array_map(
+        return array_map(
             static fn (array $item) => ExperimentItem::fromArray($item),
             $response['content'] ?? [],
         );

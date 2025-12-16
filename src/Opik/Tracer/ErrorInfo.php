@@ -4,15 +4,27 @@ declare(strict_types=1);
 
 namespace Opik\Tracer;
 
-final readonly class ErrorInfo
-{
-    public function __construct(
-        public string $message,
-        public string $exceptionType,
-        public string $traceback = '',
-    ) {}
+use Throwable;
 
-    public static function fromThrowable(\Throwable $e): self
+final class ErrorInfo
+{
+    public readonly string $message;
+
+    public readonly string $exceptionType;
+
+    public readonly string $traceback;
+
+    public function __construct(
+        string $message,
+        string $exceptionType,
+        string $traceback = '',
+    ) {
+        $this->message = $message;
+        $this->exceptionType = $exceptionType;
+        $this->traceback = $traceback;
+    }
+
+    public static function fromThrowable(Throwable $e): self
     {
         return new self(
             message: $e->getMessage(),

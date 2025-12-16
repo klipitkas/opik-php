@@ -10,9 +10,8 @@ use Opik\OpikClient;
 use Opik\Tracer\ErrorInfo;
 use Opik\Tracer\Span;
 use Opik\Tracer\SpanType;
-use Opik\Tracer\Trace;
 use ReflectionFunction;
-use ReflectionMethod;
+use Throwable;
 
 final class TrackHandler
 {
@@ -30,7 +29,9 @@ final class TrackHandler
 
     /**
      * @template T
+     *
      * @param callable(): T $callback
+     *
      * @return T
      */
     public static function track(
@@ -92,7 +93,7 @@ final class TrackHandler
             }
 
             return $result;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $errorInfo = ErrorInfo::fromThrowable($e);
             $span->update(errorInfo: $errorInfo);
             $span->end();
@@ -157,15 +158,15 @@ final class TrackHandler
         }
 
         if (\is_object($result)) {
-            if (\method_exists($result, 'toArray')) {
+            if (method_exists($result, 'toArray')) {
                 return $result->toArray();
             }
 
-            if (\method_exists($result, '__toString')) {
+            if (method_exists($result, '__toString')) {
                 return ['result' => (string) $result];
             }
 
-            return \get_object_vars($result);
+            return get_object_vars($result);
         }
 
         return ['result' => $result];

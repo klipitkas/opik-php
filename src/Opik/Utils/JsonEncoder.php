@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Opik\Utils;
 
+use DateTimeInterface;
 use JsonException;
 
 /**
@@ -12,9 +13,9 @@ use JsonException;
  * Handles encoding of complex objects and provides fallback sanitization
  * for data that cannot be directly JSON encoded.
  */
-final readonly class JsonEncoder
+final class JsonEncoder
 {
-    private const int ENCODE_FLAGS = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+    private const ENCODE_FLAGS = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
     /**
      * Encode data to JSON string with automatic sanitization fallback.
@@ -23,14 +24,15 @@ final readonly class JsonEncoder
      * This handles cases like resources, non-serializable objects, etc.
      *
      * @param mixed $data The data to encode
+     *
      * @return string The JSON string
      */
     public static function encode(mixed $data): string
     {
         try {
-            return \json_encode($data, self::ENCODE_FLAGS);
+            return json_encode($data, self::ENCODE_FLAGS);
         } catch (JsonException $e) {
-            return \json_encode(self::sanitize($data), self::ENCODE_FLAGS);
+            return json_encode(self::sanitize($data), self::ENCODE_FLAGS);
         }
     }
 
@@ -39,7 +41,7 @@ final readonly class JsonEncoder
      */
     public static function decode(string $json): array
     {
-        return \json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -53,28 +55,29 @@ final readonly class JsonEncoder
      * - Resources: '[resource]' placeholder
      *
      * @param mixed $data The data to sanitize
+     *
      * @return mixed The sanitized data
      */
     private static function sanitize(mixed $data): mixed
     {
         if (\is_array($data)) {
-            return \array_map(self::sanitize(...), $data);
+            return array_map(self::sanitize(...), $data);
         }
 
         if (\is_object($data)) {
-            if ($data instanceof \DateTimeInterface) {
-                return $data->format(\DateTimeInterface::RFC3339_EXTENDED);
+            if ($data instanceof DateTimeInterface) {
+                return $data->format(DateTimeInterface::RFC3339_EXTENDED);
             }
 
-            if (\method_exists($data, 'toArray')) {
+            if (method_exists($data, 'toArray')) {
                 return self::sanitize($data->toArray());
             }
 
-            if (\method_exists($data, '__toString')) {
+            if (method_exists($data, '__toString')) {
                 return (string) $data;
             }
 
-            return self::sanitize(\get_object_vars($data));
+            return self::sanitize(get_object_vars($data));
         }
 
         if (\is_resource($data)) {

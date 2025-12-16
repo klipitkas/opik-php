@@ -125,6 +125,7 @@ final class Span
      * @param mixed $input Optional input data
      * @param array<string, mixed>|null $metadata Optional metadata
      * @param array<int, string>|null $tags Optional tags
+     *
      * @return self The created child span
      */
     public function span(
@@ -160,6 +161,7 @@ final class Span
      * @param Usage|null $usage Token usage statistics (for LLM spans)
      * @param ErrorInfo|null $errorInfo Error information if the operation failed
      * @param float|null $totalCost Total cost override for the span
+     *
      * @return self For method chaining
      */
     public function update(
@@ -183,11 +185,11 @@ final class Span
         }
 
         if ($metadata !== null) {
-            $this->metadata = \array_merge($this->metadata, $metadata);
+            $this->metadata = array_merge($this->metadata, $metadata);
         }
 
         if ($tags !== null) {
-            $this->tags = \array_merge($this->tags, $tags);
+            $this->tags = array_merge($this->tags, $tags);
         }
 
         if ($endTime !== null) {
@@ -226,6 +228,7 @@ final class Span
      * after the first call.
      *
      * @param DateTimeImmutable|null $endTime Optional end time (current time if not provided)
+     *
      * @return self For method chaining
      */
     public function end(?DateTimeImmutable $endTime = null): self
@@ -248,6 +251,7 @@ final class Span
      * @param float|string $value Numeric score value or category name
      * @param string|null $reason Optional explanation for the score
      * @param string|null $categoryName Optional category name (for categorical scores)
+     *
      * @return self For method chaining
      */
     public function logFeedbackScore(

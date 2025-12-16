@@ -52,7 +52,7 @@ final class TraceContext
     public static function popSpan(): ?Span
     {
         $popped = self::$currentSpan?->get();
-        $weakRef = \array_pop(self::$spanStack);
+        $weakRef = array_pop(self::$spanStack);
         self::$currentSpan = $weakRef;
 
         return $popped;

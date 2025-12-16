@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Opik\Dataset;
 
+use InvalidArgumentException;
 use Opik\Api\HttpClientInterface;
 
 final class Dataset
@@ -16,14 +17,15 @@ final class Dataset
         public readonly string $id,
         public readonly string $name,
         public readonly ?string $description = null,
-    ) {}
+    ) {
+    }
 
     /**
      * @param array<int, DatasetItem>|array<int, array<string, mixed>> $items
      */
     public function insert(array $items): self
     {
-        $datasetItems = \array_map(
+        $datasetItems = array_map(
             static fn (DatasetItem|array $item) => $item instanceof DatasetItem
                 ? $item
                 : DatasetItem::fromArray($item),
@@ -32,13 +34,13 @@ final class Dataset
 
         $this->httpClient->put('v1/private/datasets/items', [
             'dataset_name' => $this->name,
-            'items' => \array_map(
+            'items' => array_map(
                 static fn (DatasetItem $item) => $item->toArray(),
                 $datasetItems,
             ),
         ]);
 
-        $this->items = \array_merge($this->items, $datasetItems);
+        $this->items = array_merge($this->items, $datasetItems);
 
         return $this;
     }
@@ -48,7 +50,8 @@ final class Dataset
      * You need to provide the full item object as it will override what has been supplied previously.
      *
      * @param array<int, DatasetItem>|array<int, array<string, mixed>> $items Items to update (must have IDs)
-     * @throws \InvalidArgumentException If any item is missing an ID
+     *
+     * @throws InvalidArgumentException If any item is missing an ID
      */
     public function update(array $items): self
     {
@@ -59,7 +62,7 @@ final class Dataset
         foreach ($items as $index => $item) {
             $itemArray = $item instanceof DatasetItem ? ['id' => $item->id] : $item;
             if (!isset($itemArray['id']) || empty($itemArray['id'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     "Dataset item at index {$index} is missing an 'id' field. " .
                     'Update operations require all items to have IDs.',
                 );
@@ -80,7 +83,7 @@ final class Dataset
             'item_ids' => $itemIds,
         ]);
 
-        $this->items = \array_filter(
+        $this->items = array_filter(
             $this->items,
             static fn (DatasetItem $item) => !\in_array($item->id, $itemIds, true),
         );
@@ -98,7 +101,7 @@ final class Dataset
             'size' => $size,
         ]);
 
-        return \array_map(
+        return array_map(
             static fn (array $item) => DatasetItem::fromArray($item),
             $response['content'] ?? [],
         );

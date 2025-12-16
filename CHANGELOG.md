@@ -2,6 +2,18 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.6.0] - 2025-12-16
+
+### Added
+
+- PHP CS Fixer configuration for consistent code formatting
+- Pre-commit hook for automatic formatting and testing
+- `composer format` and `composer lint` commands
+
+### Changed
+
+- Lowered PHP version requirement from 8.4 to 8.1 for broader compatibility
+
 ## [0.5.0] - 2025-12-16
 
 ### Added

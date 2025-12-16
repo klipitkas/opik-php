@@ -20,7 +20,7 @@ The Opik PHP SDK follows a **layered architecture** with clear separation of con
 - **Interface-based Design**: HttpClientInterface for testability
 - **Immutable Entities**: Readonly properties where possible
 - **WeakReference Context**: TraceContext uses WeakReference to prevent memory leaks
-- **PHP 8.4 Features**: Readonly classes, enums, attributes, named arguments, constructor property promotion
+- **PHP 8.1+ Features**: Enums, attributes, named arguments, constructor property promotion, readonly properties
 
 ### Directory Structure
 
@@ -52,15 +52,27 @@ composer install
 composer install --dev
 ```
 
-### Linting and Static Analysis
+### Linting, Formatting and Static Analysis
 
 ```bash
-# Run PHPStan (level 5)
-./vendor/bin/phpstan analyse
+# Format code (auto-fix)
+composer format
 
-# Run PHP CS Fixer
-./vendor/bin/php-cs-fixer fix --dry-run --diff
-./vendor/bin/php-cs-fixer fix  # Apply fixes
+# Check formatting without fixing
+composer format:check
+
+# Run PHPStan static analysis
+composer analyse
+
+# Run both (lint = analyse + format:check)
+composer lint
+```
+
+### Git Hooks Setup
+
+```bash
+# Enable pre-commit hook (runs format + tests before commit)
+git config core.hooksPath .githooks
 ```
 
 ### Testing
@@ -83,8 +95,8 @@ composer install --dev
 
 ### PHP Version
 
-- Requires PHP 8.4+
-- Uses modern PHP features: readonly classes, enums, attributes, named arguments
+- Requires PHP 8.1+
+- Uses modern PHP features: readonly properties, enums, attributes, named arguments
 
 ### Naming Conventions
 
@@ -181,13 +193,23 @@ The SDK communicates with these Opik API endpoints:
 - BatchQueue registers global shutdown handler for auto-flush
 - Input validation uses `empty(trim($value))` pattern
 
+## Before Committing
+
+Always run `composer format` before committing to ensure consistent code style. Or enable the pre-commit hook:
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Release instructions
 
-- Update README.md - Document any new public methods/features added
-- Update CHANGELOG.md - Add entry for the new version with changes
-- Update composer.json version - Follow semver:
-  - Patch (0.0.X) for bug fixes
-  - Minor (0.X.0) for new features (backwards compatible)
-  - Major (X.0.0) for breaking changes
-- Create git tag - Tag the release with the version (e.g., v0.4.0)
-- Commit and push - Push all changes and tag to master
+1. Run `composer format` - Format all code
+2. Run `composer test` - Ensure all tests pass
+3. Update README.md - Document any new public methods/features added
+4. Update CHANGELOG.md - Add entry for the new version with changes
+5. Update composer.json version - Follow semver:
+   - Patch (0.0.X) for bug fixes
+   - Minor (0.X.0) for new features (backwards compatible)
+   - Major (X.0.0) for breaking changes
+6. Create git tag - Tag the release with the version (e.g., v0.5.0)
+7. Commit and push - Push all changes and tag to master

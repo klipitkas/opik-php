@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * Generates unique identifiers for traces, spans, and other entities.
  */
-final readonly class IdGenerator
+final class IdGenerator
 {
     /**
      * Generate a new UUID v7 identifier.
