@@ -23,7 +23,7 @@ For **cloud usage** (recommended), set environment variables:
 
 ```bash
 export OPIK_API_KEY=your-api-key
-export OPIK_WORKSPACE=your-workspace  
+export OPIK_WORKSPACE=your-workspace
 export OPIK_PROJECT_NAME=your-project
 ```
 

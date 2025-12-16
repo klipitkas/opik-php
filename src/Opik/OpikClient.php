@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Opik;
 
 use DateTimeImmutable;
+use Exception;
 use InvalidArgumentException;
 use Opik\Api\HttpClient;
 use Opik\Api\HttpClientInterface;
+use Opik\Attachment\AttachmentClient;
 use Opik\Config\Config;
 use Opik\Dataset\Dataset;
 use Opik\Exception\ConfigurationException;
 use Opik\Exception\OpikException;
 use Opik\Experiment\Experiment;
+use Opik\Feedback\FeedbackScore;
 use Opik\Message\BatchQueue;
 use Opik\Prompt\Prompt;
 use Opik\Tracer\Span;
@@ -83,6 +86,25 @@ final class OpikClient
 
         $this->httpClient = new HttpClient($this->config, $logger);
         $this->batchQueue = new BatchQueue($this->httpClient, $this->config, $logger);
+    }
+
+    /**
+     * Check if current API key user has access to the configured workspace.
+     *
+     * This method validates that the current API key and workspace configuration
+     * are valid and the user has access to the workspace.
+     *
+     * @return bool True if authentication is successful, false otherwise
+     */
+    public function authCheck(): bool
+    {
+        try {
+            $this->httpClient->post('v1/private/auth', []);
+
+            return true;
+        } catch (Exception) {
+            return false;
+        }
     }
 
     /**
@@ -689,32 +711,24 @@ final class OpikClient
     /**
      * Log feedback scores for multiple traces in batch.
      *
-     * @param array<int, array{trace_id: string, name: string, value: float|string, reason?: string, category_name?: string}> $scores
+     * @param array<int, FeedbackScore> $scores Array of FeedbackScore objects with traceId set
+     *
+     * @throws InvalidArgumentException If scores array is empty or any score is missing traceId
      */
     public function logTracesFeedbackScores(array $scores): void
     {
+        if (empty($scores)) {
+            throw new InvalidArgumentException('Scores array cannot be empty');
+        }
+
         $projectName = $this->config->projectName ?? 'Default Project';
 
-        $formattedScores = array_map(function (array $score) use ($projectName): array {
-            $data = [
-                'id' => IdGenerator::uuid(),
-                'trace_id' => $score['trace_id'],
-                'name' => $score['name'],
-                'source' => 'sdk',
-                'project_name' => $projectName,
-            ];
-
-            if (\is_float($score['value'])) {
-                $data['value'] = $score['value'];
-            } else {
-                $data['category_name'] = $score['category_name'] ?? $score['value'];
+        $formattedScores = array_map(function (FeedbackScore $score) use ($projectName): array {
+            if ($score->traceId === null) {
+                throw new InvalidArgumentException('Each FeedbackScore must have a traceId set');
             }
 
-            if (isset($score['reason'])) {
-                $data['reason'] = $score['reason'];
-            }
-
-            return $data;
+            return $score->toArray($projectName);
         }, $scores);
 
         $this->httpClient->put('v1/private/traces/feedback-scores', ['scores' => $formattedScores]);
@@ -723,35 +737,94 @@ final class OpikClient
     /**
      * Log feedback scores for multiple spans in batch.
      *
-     * @param array<int, array{span_id: string, name: string, value: float|string, reason?: string, category_name?: string}> $scores
+     * @param array<int, FeedbackScore> $scores Array of FeedbackScore objects with spanId set
+     *
+     * @throws InvalidArgumentException If scores array is empty or any score is missing spanId
      */
     public function logSpansFeedbackScores(array $scores): void
     {
+        if (empty($scores)) {
+            throw new InvalidArgumentException('Scores array cannot be empty');
+        }
+
         $projectName = $this->config->projectName ?? 'Default Project';
 
-        $formattedScores = array_map(function (array $score) use ($projectName): array {
-            $data = [
-                'id' => IdGenerator::uuid(),
-                'span_id' => $score['span_id'],
-                'name' => $score['name'],
-                'source' => 'sdk',
-                'project_name' => $projectName,
-            ];
-
-            if (\is_float($score['value'])) {
-                $data['value'] = $score['value'];
-            } else {
-                $data['category_name'] = $score['category_name'] ?? $score['value'];
+        $formattedScores = array_map(function (FeedbackScore $score) use ($projectName): array {
+            if ($score->spanId === null) {
+                throw new InvalidArgumentException('Each FeedbackScore must have a spanId set');
             }
 
-            if (isset($score['reason'])) {
-                $data['reason'] = $score['reason'];
-            }
-
-            return $data;
+            return $score->toArray($projectName);
         }, $scores);
 
         $this->httpClient->put('v1/private/spans/feedback-scores', ['scores' => $formattedScores]);
+    }
+
+    /**
+     * Close one or more threads.
+     *
+     * Threads must be closed before feedback scores can be added to them.
+     *
+     * @param array<int, string> $threadIds Array of thread IDs to close
+     * @param string|null $projectName Project name (uses default if not provided)
+     *
+     * @throws InvalidArgumentException If threadIds array is empty
+     */
+    public function closeThreads(array $threadIds, ?string $projectName = null): void
+    {
+        if (empty($threadIds)) {
+            throw new InvalidArgumentException('Thread IDs array cannot be empty');
+        }
+
+        $this->httpClient->put('v1/private/traces/threads/close', [
+            'project_name' => $projectName ?? $this->config->projectName ?? 'Default Project',
+            'thread_ids' => $threadIds,
+        ]);
+    }
+
+    /**
+     * Close a single thread.
+     *
+     * Threads must be closed before feedback scores can be added to them.
+     *
+     * @param string $threadId The thread ID to close
+     * @param string|null $projectName Project name (uses default if not provided)
+     *
+     * @throws InvalidArgumentException If threadId is empty
+     */
+    public function closeThread(string $threadId, ?string $projectName = null): void
+    {
+        if (empty(trim($threadId))) {
+            throw new InvalidArgumentException('Thread ID cannot be empty');
+        }
+
+        $this->closeThreads([$threadId], $projectName);
+    }
+
+    /**
+     * Log feedback scores for multiple threads in batch.
+     *
+     * @param array<int, FeedbackScore> $scores Array of FeedbackScore objects with threadId set
+     *
+     * @throws InvalidArgumentException If scores array is empty or any score is missing threadId
+     */
+    public function logThreadsFeedbackScores(array $scores): void
+    {
+        if (empty($scores)) {
+            throw new InvalidArgumentException('Scores array cannot be empty');
+        }
+
+        $projectName = $this->config->projectName ?? 'Default Project';
+
+        $formattedScores = array_map(function (FeedbackScore $score) use ($projectName): array {
+            if ($score->threadId === null) {
+                throw new InvalidArgumentException('Each FeedbackScore must have a threadId set');
+            }
+
+            return $score->toThreadArray($projectName);
+        }, $scores);
+
+        $this->httpClient->put('v1/private/traces/threads/feedback-scores', ['scores' => $formattedScores]);
     }
 
     /**
@@ -1032,6 +1105,16 @@ final class OpikClient
     public function getConfig(): Config
     {
         return $this->config;
+    }
+
+    /**
+     * Get an attachment client for uploading/downloading attachments.
+     *
+     * @return AttachmentClient The attachment client
+     */
+    public function getAttachmentClient(): AttachmentClient
+    {
+        return new AttachmentClient($this->httpClient, $this->config);
     }
 
     /**
