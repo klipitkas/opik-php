@@ -1,0 +1,5 @@
+/vendor/
+/.phpstan.cache/
+/.phpunit.cache/
+composer.lock
+.env
