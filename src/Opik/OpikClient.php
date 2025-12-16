@@ -17,6 +17,7 @@ use Opik\Exception\OpikException;
 use Opik\Experiment\Experiment;
 use Opik\Feedback\FeedbackScore;
 use Opik\Message\BatchQueue;
+use Opik\Prompt\ChatMessage;
 use Opik\Prompt\Prompt;
 use Opik\Tracer\Span;
 use Opik\Tracer\SpanType;
@@ -499,18 +500,40 @@ final class OpikClient
     /**
      * Create a new prompt.
      *
+     * Supports both text prompts (string template) and chat prompts (array of ChatMessage).
+     *
      * @param string $name The prompt name
-     * @param string $template The prompt template
+     * @param string|array<int, ChatMessage> $template The prompt template (string for text, ChatMessage array for chat)
      * @param string|null $description Optional description
      * @param array<string, mixed>|null $metadata Optional metadata
      *
      * @throws InvalidArgumentException If name or template is empty
      *
      * @return Prompt The created prompt
+     *
+     * @example
+     * ```php
+     * // Text prompt
+     * $prompt = $client->createPrompt(
+     *     name: 'greeting-prompt',
+     *     template: 'Hello {{name}}!',
+     * );
+     *
+     * // Chat prompt
+     * use Opik\Prompt\ChatMessage;
+     *
+     * $prompt = $client->createPrompt(
+     *     name: 'assistant-prompt',
+     *     template: [
+     *         ChatMessage::system('You are a helpful assistant specializing in {{domain}}.'),
+     *         ChatMessage::user('{{question}}'),
+     *     ],
+     * );
+     * ```
      */
     public function createPrompt(
         string $name,
-        string $template,
+        string|array $template,
         ?string $description = null,
         ?array $metadata = null,
     ): Prompt {
@@ -518,25 +541,49 @@ final class OpikClient
             throw new InvalidArgumentException('Prompt name cannot be empty');
         }
 
-        if (empty(trim($template))) {
-            throw new InvalidArgumentException('Prompt template cannot be empty');
-        }
-
         $id = IdGenerator::uuid();
         $versionId = IdGenerator::uuid();
+
+        // Determine if this is a chat prompt (array of ChatMessage) or text prompt (string)
+        $isChat = \is_array($template);
+
+        if ($isChat) {
+            if ($template === []) {
+                throw new InvalidArgumentException('Prompt template cannot be empty');
+            }
+
+            // Convert ChatMessage objects to arrays for JSON encoding
+            $messagesArray = array_map(
+                static fn (ChatMessage $message): array => $message->toArray(),
+                $template,
+            );
+
+            // Convert messages array to JSON for storage
+            $templateString = json_encode($messagesArray, \JSON_THROW_ON_ERROR);
+        } else {
+            if (empty(trim($template))) {
+                throw new InvalidArgumentException('Prompt template cannot be empty');
+            }
+
+            $templateString = $template;
+        }
 
         $this->httpClient->post('v1/private/prompts', [
             'id' => $id,
             'name' => $name,
             'description' => $description,
+            'template_structure' => $isChat ? 'chat' : 'text',
         ]);
 
         $this->httpClient->post('v1/private/prompts/versions', [
-            'id' => $versionId,
-            'prompt_id' => $id,
             'name' => $name,
-            'template' => $template,
-            'metadata' => $metadata,
+            'version' => [
+                'id' => $versionId,
+                'prompt_id' => $id,
+                'template' => $templateString,
+                'metadata' => $metadata,
+            ],
+            'template_structure' => $isChat ? 'chat' : 'text',
         ]);
 
         return new Prompt(

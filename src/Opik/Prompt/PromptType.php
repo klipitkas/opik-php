@@ -11,4 +11,5 @@ enum PromptType: string
 {
     case TEXT = 'text';
     case CHAT = 'chat';
+    case MUSTACHE = 'mustache';
 }

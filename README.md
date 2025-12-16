@@ -316,8 +316,12 @@ $client->deleteExperiment('experiment-name');
 
 ### Prompts
 
+Opik supports two types of prompts: **text prompts** (simple string templates) and **chat prompts** (array of messages following OpenAI's chat format).
+
+#### Text Prompts
+
 ```php
-// Create
+// Create a text prompt
 $prompt = $client->createPrompt(
     name: 'greeting',
     template: 'Hello {{name}}, you asked: {{question}}',
@@ -326,12 +330,61 @@ $prompt = $client->createPrompt(
 // Get and format
 $prompt = $client->getPrompt('greeting');
 $text = $prompt->format(['name' => 'John', 'question' => 'How are you?']);
+// Returns: "Hello John, you asked: How are you?"
+```
 
-// Versions
+#### Chat Prompts
+
+```php
+use Opik\Prompt\ChatMessage;
+
+// Create a chat prompt with messages array
+$prompt = $client->createPrompt(
+    name: 'assistant-prompt',
+    template: [
+        ChatMessage::system('You are a helpful assistant specializing in {{domain}}.'),
+        ChatMessage::user('{{question}}'),
+    ],
+);
+
+// Format returns array of messages
+$messages = $prompt->format(['domain' => 'physics', 'question' => 'What is gravity?']);
+// Returns:
+// [
+//     ['role' => 'system', 'content' => 'You are a helpful assistant specializing in physics.'],
+//     ['role' => 'user', 'content' => 'What is gravity?'],
+// ]
+```
+
+#### ChatMessage Factory Methods
+
+| Method | Description |
+|--------|-------------|
+| `ChatMessage::system($content)` | Create a system message |
+| `ChatMessage::user($content)` | Create a user message |
+| `ChatMessage::assistant($content)` | Create an assistant message |
+| `ChatMessage::tool($content)` | Create a tool message |
+
+#### Prompt Versions
+
+```php
+// Get version history
 $history = $client->getPromptHistory('greeting');
-$version = $prompt->getVersion('version-id');
 
-// Delete
+// Get specific version
+$version = $prompt->getVersion('commit-hash');
+
+// Check prompt type
+if ($version->isChat()) {
+    $messages = $version->format($variables);
+} else {
+    $text = $version->format($variables);
+}
+```
+
+#### Delete Prompts
+
+```php
 $client->deletePrompts(['prompt-id-1', 'prompt-id-2']);
 ```
 
@@ -402,7 +455,7 @@ $content = $attachmentClient->downloadAttachment(
 | | `getExperimentById(id)` | Get by ID |
 | | `updateExperiment(id, ...)` | Update experiment |
 | | `deleteExperiment(name)` | Delete experiment |
-| **Prompts** | `createPrompt(name, template)` | Create prompt |
+| **Prompts** | `createPrompt(name, template)` | Create text or chat prompt |
 | | `getPrompt(name)` | Get prompt |
 | | `getPrompts()` | List prompts |
 | | `getPromptHistory(name)` | Get versions |
