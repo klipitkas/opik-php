@@ -751,6 +751,30 @@ final class OpikClient
     }
 
     /**
+     * Get all prompts with pagination.
+     *
+     * @param int $page Page number (1-based)
+     * @param int $size Page size
+     * @return array<int, Prompt> List of prompts
+     */
+    public function getPrompts(int $page = 1, int $size = 100): array
+    {
+        $response = $this->httpClient->get('v1/private/prompts', [
+            'page' => $page,
+            'size' => $size,
+        ]);
+
+        return \array_map(
+            fn (array $prompt) => new Prompt(
+                httpClient: $this->httpClient,
+                id: $prompt['id'],
+                name: $prompt['name'],
+            ),
+            $response['content'] ?? [],
+        );
+    }
+
+    /**
      * Delete prompts in batch.
      *
      * @param array<int, string> $ids List of prompt IDs to delete
