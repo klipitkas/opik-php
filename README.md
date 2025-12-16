@@ -1,6 +1,8 @@
 # Opik PHP SDK
 
-The official PHP SDK for [Opik](https://www.comet.com/docs/opik/) - an LLM observability and evaluation platform.
+> **Community-maintained** PHP SDK for [Opik](https://www.comet.com/docs/opik/) - an LLM observability and evaluation platform.
+
+⚠️ **Note**: This is a community-maintained SDK, not an official Comet ML product. For official SDKs, see [Python](https://github.com/comet-ml/opik/tree/main/sdks/python) and [TypeScript](https://github.com/comet-ml/opik/tree/main/sdks/typescript).
 
 ## Requirements
 
