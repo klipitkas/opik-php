@@ -51,6 +51,7 @@
     "test": "phpunit",
     "test:unit": "phpunit --testsuite=unit",
     "test:integration": "phpunit --testsuite=integration",
+    "test:coverage": "phpunit --coverage-html coverage/html --coverage-text",
     "analyse": "phpstan analyse",
     "format": "php-cs-fixer fix",
     "format:check": "php-cs-fixer fix --dry-run --diff",
