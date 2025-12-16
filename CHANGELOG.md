@@ -2,6 +2,12 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.6.1] - 2025-12-16
+
+### Changed
+
+- Clarified SDK is community-maintained in README
+
 ## [0.6.0] - 2025-12-16
 
 ### Added
