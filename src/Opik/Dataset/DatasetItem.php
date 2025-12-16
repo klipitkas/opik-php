@@ -10,21 +10,99 @@ final readonly class DatasetItem
 {
     public string $id;
 
+    /** @var array<string, mixed> */
+    private array $data;
+
     /**
-     * @param array<string, mixed>|null $input
-     * @param array<string, mixed>|null $expectedOutput
-     * @param array<string, mixed>|null $metadata
+     * Create a dataset item with flexible schema.
+     *
+     * Common fields like 'input', 'expected_output', 'metadata' can be passed directly,
+     * or use the $data parameter for arbitrary fields (matching Python/TypeScript SDKs).
+     *
+     * @param array<string, mixed>|null $input Standard input field
+     * @param array<string, mixed>|null $expectedOutput Standard expected output field
+     * @param array<string, mixed>|null $metadata Standard metadata field
+     * @param array<string, mixed> $data Arbitrary data fields (flexible schema)
      */
     public function __construct(
         ?string $id = null,
-        public ?array $input = null,
-        public ?array $expectedOutput = null,
-        public ?array $metadata = null,
+        ?array $input = null,
+        ?array $expectedOutput = null,
+        ?array $metadata = null,
         public ?string $traceId = null,
         public ?string $spanId = null,
         public DatasetItemSource $source = DatasetItemSource::SDK,
+        array $data = [],
     ) {
         $this->id = $id ?? IdGenerator::uuid();
+
+        // Build the data array from explicit fields and arbitrary data
+        $builtData = $data;
+
+        if ($input !== null) {
+            $builtData['input'] = $input;
+        }
+
+        if ($expectedOutput !== null) {
+            $builtData['expected_output'] = $expectedOutput;
+        }
+
+        if ($metadata !== null) {
+            $builtData['metadata'] = $metadata;
+        }
+
+        $this->data = $builtData;
+    }
+
+    /**
+     * Get the content data (all arbitrary fields).
+     *
+     * @return array<string, mixed>
+     */
+    public function getContent(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Get a specific field from the data.
+     */
+    public function get(string $key): mixed
+    {
+        return $this->data[$key] ?? null;
+    }
+
+    /**
+     * Get the input field (convenience accessor).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getInput(): ?array
+    {
+        $input = $this->data['input'] ?? null;
+        return is_array($input) ? $input : null;
+    }
+
+    /**
+     * Get the expected output field (convenience accessor).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getExpectedOutput(): ?array
+    {
+        $output = $this->data['expected_output'] ?? null;
+        return is_array($output) ? $output : null;
+    }
+
+    /**
+     * Get the metadata field (convenience accessor).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getMetadata(): ?array
+    {
+        $metadata = $this->data['metadata'] ?? null;
+        return is_array($metadata) ? $metadata : null;
     }
 
     /**
@@ -34,15 +112,13 @@ final readonly class DatasetItem
     {
         // Handle API response format where content is in 'data' field
         $content = $data['data'] ?? [];
-        
+
         return new self(
             id: $data['id'] ?? null,
-            input: $content['input'] ?? null,
-            expectedOutput: $content['expected_output'] ?? null,
-            metadata: $content['metadata'] ?? null,
             traceId: $data['trace_id'] ?? null,
             spanId: $data['span_id'] ?? null,
             source: isset($data['source']) ? DatasetItemSource::from($data['source']) : DatasetItemSource::SDK,
+            data: is_array($content) ? $content : [],
         );
     }
 
@@ -51,26 +127,11 @@ final readonly class DatasetItem
      */
     public function toArray(): array
     {
-        // Build the data content (flexible schema)
-        $dataContent = [];
-        
-        if ($this->input !== null) {
-            $dataContent['input'] = $this->input;
-        }
-
-        if ($this->expectedOutput !== null) {
-            $dataContent['expected_output'] = $this->expectedOutput;
-        }
-
-        if ($this->metadata !== null) {
-            $dataContent['metadata'] = $this->metadata;
-        }
-
         // API format: data field contains the actual content
         $apiData = [
             'id' => $this->id,
             'source' => $this->source->value,
-            'data' => $dataContent,
+            'data' => $this->data,
         ];
 
         if ($this->traceId !== null) {
