@@ -395,6 +395,7 @@ $result = TrackHandler::track(
 | `OPIK_PROJECT_NAME` | Project name | No | `Default Project` |
 | `OPIK_URL_OVERRIDE` | Custom API URL | No | - |
 | `OPIK_DEBUG` | Enable debug mode | No | `false` |
+| `OPIK_ENABLE_COMPRESSION` | Enable gzip request compression | No | `true` |
 
 **For cloud usage**, you must set `OPIK_API_KEY` and `OPIK_WORKSPACE`. Get these from your [Opik dashboard](https://www.comet.com/docs/opik/).
 
@@ -420,12 +421,14 @@ $result = TrackHandler::track(
 #### Experiments
 - `getExperiment(name)` - Get an experiment by name
 - `getExperimentById(id)` - Get an experiment by ID
+- `getExperiments(datasetId?, page?, size?)` - List all experiments with pagination
 - `createExperiment(name, datasetName, datasetId?)` - Create a new experiment
 - `updateExperiment(id, name?, metadata?)` - Update experiment metadata
 - `deleteExperiment(name)` - Delete an experiment by name
 
 #### Prompts
 - `getPrompt(name)` - Get a prompt by name
+- `getPrompts(page?, size?)` - List all prompts with pagination
 - `createPrompt(name, template, description?, metadata?)` - Create a new prompt
 - `getPromptHistory(name, page?, size?)` - Get all versions of a prompt
 - `deletePrompts(ids)` - Delete prompts in batch

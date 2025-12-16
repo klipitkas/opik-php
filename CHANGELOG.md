@@ -1,0 +1,37 @@
+# Changelog
+
+All notable changes to the Opik PHP SDK will be documented in this file.
+
+## [0.4.0] - 2025-12-16
+
+### Added
+- `getPrompts()` method for listing prompts with pagination
+- `getExperiments()` method for listing experiments with pagination (supports filtering by datasetId)
+- Gzip request compression support (enabled by default)
+- `OPIK_ENABLE_COMPRESSION` environment variable to control compression
+- `enableCompression` config option
+
+### Changed
+- `Experiment.datasetName` is now nullable to handle API responses where dataset_name may be null
+
+### Documentation
+- Updated README with DatasetItem flexible schema documentation
+
+## [0.3.0] - 2025-12-16
+
+### Added
+- Flexible schema support for DatasetItem with arbitrary fields
+- `DatasetItem::getContent()`, `get()`, `getInput()`, `getExpectedOutput()`, `getMetadata()` accessor methods
+- `data` parameter for DatasetItem constructor
+
+## [0.2.0] - 2025-12-15
+
+### Added
+- Initial public release
+- Tracing support (traces, spans, nested spans)
+- Dataset management
+- Experiment management
+- Prompt management
+- Feedback scores
+- Thread support
+- Batch queue for efficient API communication

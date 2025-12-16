@@ -1,7 +1,7 @@
 {
     "name": "comet-ml/opik",
     "description": "Opik PHP SDK - LLM observability and evaluation platform",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "type": "library",
     "license": "Apache-2.0",
     "keywords": [

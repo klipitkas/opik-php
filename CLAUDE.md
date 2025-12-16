@@ -180,3 +180,14 @@ The SDK communicates with these Opik API endpoints:
 - TraceContext uses WeakReference to prevent memory leaks
 - BatchQueue registers global shutdown handler for auto-flush
 - Input validation uses `empty(trim($value))` pattern
+
+## Release instructions
+
+- Update README.md - Document any new public methods/features added
+- Update CHANGELOG.md - Add entry for the new version with changes
+- Update composer.json version - Follow semver:
+  - Patch (0.0.X) for bug fixes
+  - Minor (0.X.0) for new features (backwards compatible)
+  - Major (X.0.0) for breaking changes
+- Create git tag - Tag the release with the version (e.g., v0.4.0)
+- Commit and push - Push all changes and tag to master
