@@ -92,7 +92,23 @@ final class HttpClient implements HttpClientInterface
                 $options = [];
 
                 if ($data !== []) {
-                    $options[RequestOptions::JSON] = $data;
+                    if ($this->config->enableCompression) {
+                        $jsonData = JsonEncoder::encode($data);
+                        $compressed = \gzencode($jsonData, 6);
+
+                        if ($compressed !== false) {
+                            $options[RequestOptions::BODY] = $compressed;
+                            $options[RequestOptions::HEADERS] = [
+                                'Content-Encoding' => 'gzip',
+                                'Content-Type' => 'application/json',
+                                'Content-Length' => \strlen($compressed),
+                            ];
+                        } else {
+                            $options[RequestOptions::JSON] = $data;
+                        }
+                    } else {
+                        $options[RequestOptions::JSON] = $data;
+                    }
                 }
 
                 if ($query !== []) {
@@ -150,6 +166,7 @@ final class HttpClient implements HttpClientInterface
         $headers = [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
+            'Accept-Encoding' => 'gzip',
         ];
 
         if ($this->config->apiKey !== null) {

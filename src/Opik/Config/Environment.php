@@ -16,6 +16,8 @@ final readonly class Environment
 
     public const string OPIK_DEBUG = 'OPIK_DEBUG';
 
+    public const string OPIK_ENABLE_COMPRESSION = 'OPIK_ENABLE_COMPRESSION';
+
     public static function get(string $name, ?string $default = null): ?string
     {
         $value = \getenv($name);

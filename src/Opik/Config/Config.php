@@ -30,17 +30,21 @@ final readonly class Config
 
     public bool $debug;
 
+    public bool $enableCompression;
+
     public function __construct(
         ?string $apiKey = null,
         ?string $workspace = null,
         ?string $projectName = null,
         ?string $baseUrl = null,
         bool $debug = false,
+        ?bool $enableCompression = null,
     ) {
         $this->apiKey = $apiKey ?? Environment::get(Environment::OPIK_API_KEY);
         $this->workspace = $workspace ?? Environment::get(Environment::OPIK_WORKSPACE);
         $this->projectName = $projectName ?? Environment::get(Environment::OPIK_PROJECT_NAME, 'Default Project');
         $this->debug = $debug || Environment::getBool(Environment::OPIK_DEBUG);
+        $this->enableCompression = $enableCompression ?? Environment::getBool(Environment::OPIK_ENABLE_COMPRESSION, true);
 
         $resolvedBaseUrl = $baseUrl
             ?? Environment::get(Environment::OPIK_URL_OVERRIDE)
