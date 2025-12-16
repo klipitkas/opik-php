@@ -288,16 +288,24 @@ $span = $client->getSpanContent('span-456');
 ```php
 <?php
 
+use Opik\Feedback\FeedbackScore;
+
 // Log feedback scores for multiple traces
 $client->logTracesFeedbackScores([
-    ['trace_id' => 'trace-1', 'name' => 'quality', 'value' => 0.9],
-    ['trace_id' => 'trace-2', 'name' => 'quality', 'value' => 0.85],
+    FeedbackScore::forTrace('trace-1', 'quality', value: 0.9),
+    FeedbackScore::forTrace('trace-2', 'quality', value: 0.85, reason: 'Good response'),
 ]);
 
 // Log feedback scores for multiple spans
 $client->logSpansFeedbackScores([
-    ['span_id' => 'span-1', 'name' => 'accuracy', 'value' => 0.95],
-    ['span_id' => 'span-2', 'name' => 'accuracy', 'value' => 0.88],
+    FeedbackScore::forSpan('span-1', 'accuracy', value: 0.95),
+    FeedbackScore::forSpan('span-2', 'accuracy', categoryName: 'high'),
+]);
+
+// Log feedback scores for threads (must close thread first)
+$client->closeThread('thread-123');
+$client->logThreadsFeedbackScores([
+    FeedbackScore::forThread('thread-123', 'helpfulness', value: 0.9),
 ]);
 
 // Delete feedback scores
@@ -310,15 +318,84 @@ $client->deleteSpanFeedbackScore('span-456', 'accuracy');
 ```php
 <?php
 
+use Opik\Feedback\FeedbackScore;
+
 // Create traces with thread ID for grouping conversations
 $trace1 = $client->trace(
     name: 'user-message-1',
     threadId: 'conversation-123',
 );
+$trace1->end();
 
 $trace2 = $client->trace(
     name: 'user-message-2',
     threadId: 'conversation-123',
+);
+$trace2->end();
+$client->flush();
+
+// Close thread before adding feedback scores
+$client->closeThread('conversation-123');
+
+// Add feedback score to the thread
+$client->logThreadsFeedbackScores([
+    FeedbackScore::forThread('conversation-123', 'satisfaction', value: 0.95),
+]);
+```
+
+### Authentication Check
+
+```php
+<?php
+
+$client = new OpikClient();
+
+// Check if credentials are valid
+if ($client->authCheck()) {
+    echo "Authentication successful!";
+} else {
+    echo "Invalid credentials";
+}
+```
+
+### Attachments
+
+```php
+<?php
+
+use Opik\Attachment\AttachmentEntityType;
+
+// Get attachment client
+$attachmentClient = $client->getAttachmentClient();
+
+// Upload an attachment to a trace
+$attachmentClient->uploadAttachment(
+    projectName: 'my-project',
+    entityType: AttachmentEntityType::TRACE,
+    entityId: $trace->getId(),
+    filePath: '/path/to/file.pdf',
+    fileName: 'report.pdf',      // optional
+    mimeType: 'application/pdf', // optional, auto-detected
+);
+
+// List attachments for an entity
+$attachments = $attachmentClient->getAttachmentList(
+    projectName: 'my-project',
+    entityType: AttachmentEntityType::TRACE,
+    entityId: $trace->getId(),
+);
+
+foreach ($attachments as $attachment) {
+    echo $attachment->fileName . ' (' . $attachment->fileSize . ' bytes)';
+}
+
+// Download attachment content
+$content = $attachmentClient->downloadAttachment(
+    projectName: 'my-project',
+    entityType: AttachmentEntityType::TRACE,
+    entityId: $trace->getId(),
+    fileName: 'report.pdf',
+    mimeType: 'application/pdf',
 );
 ```
 
@@ -439,16 +516,24 @@ $result = TrackHandler::track(
 - `deletePrompts(ids)` - Delete prompts in batch
 
 #### Feedback Scores
+
 - `logTracesFeedbackScores(scores)` - Log feedback scores for multiple traces
 - `logSpansFeedbackScores(scores)` - Log feedback scores for multiple spans
+- `logThreadsFeedbackScores(scores)` - Log feedback scores for multiple threads
 - `deleteTraceFeedbackScore(traceId, name)` - Delete a trace feedback score
 - `deleteSpanFeedbackScore(spanId, name)` - Delete a span feedback score
+- `closeThread(threadId, projectName?)` - Close a single thread
+- `closeThreads(threadIds, projectName?)` - Close multiple threads
+- `getAttachmentClient()` - Get an AttachmentClient instance
 
 #### Projects
+
 - `getProject(id)` - Get project by ID
 - `getProjectUrl(projectName?)` - Get URL to project in Opik UI
 
 #### Utilities
+
+- `authCheck()` - Check if API credentials are valid
 - `flush()` - Flush all pending data to the server
 - `getConfig()` - Get current configuration
 - `getBatchQueue()` - Get batch queue (advanced usage)
