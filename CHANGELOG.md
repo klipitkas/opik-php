@@ -2,6 +2,26 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.8.0] - 2025-12-16
+
+### Added
+
+- Chat prompts support with `ChatMessage` class and factory methods (`system`, `user`, `assistant`, `tool`)
+- `ChatMessageRole` enum for message roles (OpenAI chat format)
+- `TemplateStructure` enum for prompt types (text/chat)
+- `PromptVersion::isChat()` and `PromptVersion::isText()` helper methods
+- Unit tests for `ChatMessage` and `PromptVersion` (127 tests, 321 assertions)
+
+### Changed
+
+- `createPrompt()` now accepts `string|array<ChatMessage>` for both text and chat prompts
+- `PromptVersion` handles `template_structure` from API responses
+- Added `mustache` to `PromptType` enum (returned by API)
+
+### Fixed
+
+- Template variable replacement now works correctly with `{{variable}}` syntax
+
 ## [0.7.0] - 2025-12-16
 
 ### Added
