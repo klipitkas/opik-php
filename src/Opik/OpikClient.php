@@ -296,6 +296,36 @@ final class OpikClient
     }
 
     /**
+     * Get all experiments with pagination.
+     *
+     * @param string|null $datasetId Filter by dataset ID
+     * @param int $page Page number (1-based)
+     * @param int $size Page size
+     * @return array<int, Experiment> List of experiments
+     */
+    public function getExperiments(?string $datasetId = null, int $page = 1, int $size = 100): array
+    {
+        $query = [ 'page' => $page, 'size' => $size ];
+
+        if ($datasetId !== null) {
+            $query['dataset_id'] = $datasetId;
+        }
+
+        $response = $this->httpClient->get('v1/private/experiments', $query);
+
+        return \array_map(
+            fn (array $experiment) => new Experiment(
+                httpClient: $this->httpClient,
+                id: $experiment['id'],
+                name: $experiment['name'],
+                datasetName: $experiment['dataset_name'] ?? null,
+                datasetId: $experiment['dataset_id'] ?? null,
+            ),
+            $response['content'] ?? [],
+        );
+    }
+
+    /**
      * Create a new experiment.
      *
      * @param string $name The experiment name

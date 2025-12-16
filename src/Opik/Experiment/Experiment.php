@@ -12,7 +12,7 @@ final class Experiment
         private readonly HttpClientInterface $httpClient,
         public readonly string $id,
         public readonly string $name,
-        public readonly string $datasetName,
+        public readonly ?string $datasetName = null,
         public readonly ?string $datasetId = null,
     ) {}
 
