@@ -2,6 +2,29 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.7.0] - 2025-12-16
+
+### Added
+
+- `authCheck()` method to verify API credentials
+- Batch feedback scores for traces via `logTracesFeedbackScores()`
+- Batch feedback scores for spans via `logSpansFeedbackScores()`
+- Batch feedback scores for threads via `logThreadsFeedbackScores()`
+- `FeedbackScore` class with factory methods (`forTrace()`, `forSpan()`, `forThread()`)
+- Thread support with `closeThread()` and `closeThreads()` methods
+- Attachments support via `AttachmentClient`:
+  - `uploadAttachment()` - Upload files to traces or spans
+  - `getAttachmentList()` - List attachments for an entity
+  - `downloadAttachment()` - Download attachment content
+- `deleteTraceFeedbackScore()` and `deleteSpanFeedbackScore()` methods
+- Unit tests for new features (108 tests, 274 assertions)
+- `test:coverage` composer script
+
+### Changed
+
+- Reorganized README with table of contents and better navigation
+- Configuration section moved after Quick Start for better discoverability
+
 ## [0.6.1] - 2025-12-16
 
 ### Changed
