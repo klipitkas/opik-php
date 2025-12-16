@@ -145,6 +145,7 @@ $span->logFeedbackScore(
 <?php
 
 use Opik\Dataset\DatasetItem;
+use Opik\Dataset\DatasetItemSource;
 
 // Create or get a dataset
 $dataset = $client->getOrCreateDataset(
@@ -152,11 +153,12 @@ $dataset = $client->getOrCreateDataset(
     description: 'Test cases for evaluation',
 );
 
-// Insert items
+// Insert items with standard fields
 $dataset->insert([
     new DatasetItem(
         input: ['question' => 'What is PHP?'],
         expectedOutput: ['answer' => 'A programming language'],
+        metadata: ['difficulty' => 'easy'],
     ),
     new DatasetItem(
         input: ['question' => 'What is Opik?'],
@@ -164,8 +166,36 @@ $dataset->insert([
     ),
 ]);
 
+// Insert items with flexible schema (arbitrary fields)
+$dataset->insert([
+    new DatasetItem(data: [
+        'prompt' => 'Translate to French: Hello',
+        'expected' => 'Bonjour',
+        'language' => 'French',
+    ]),
+]);
+
+// Insert items linked to traces/spans
+$dataset->insert([
+    new DatasetItem(
+        input: ['query' => 'Example query'],
+        traceId: 'trace-uuid',
+        spanId: 'span-uuid',
+        source: DatasetItemSource::TRACE,
+    ),
+]);
+
 // Get items
 $items = $dataset->getItems(page: 1, size: 100);
+
+// Access item data
+foreach ($items as $item) {
+    $input = $item->getInput();           // Get input field
+    $output = $item->getExpectedOutput(); // Get expected_output field
+    $metadata = $item->getMetadata();     // Get metadata field
+    $content = $item->getContent();       // Get all fields
+    $custom = $item->get('custom_field'); // Get specific field
+}
 ```
 
 ### Experiments
@@ -443,6 +473,32 @@ $result = TrackHandler::track(
 - `SpanType::LLM` - LLM call span
 - `SpanType::TOOL` - Tool/function call span
 - `SpanType::GUARDRAIL` - Guardrail check span
+
+### DatasetItem
+
+- `getContent()` - Get all data fields as array
+- `get(key)` - Get a specific field by key
+- `getInput()` - Get the input field (convenience accessor)
+- `getExpectedOutput()` - Get the expected_output field (convenience accessor)
+- `getMetadata()` - Get the metadata field (convenience accessor)
+
+Constructor parameters:
+
+- `id?` - Custom ID (auto-generated if not provided)
+- `input?` - Standard input field
+- `expectedOutput?` - Standard expected output field
+- `metadata?` - Standard metadata field
+- `traceId?` - Link to a trace
+- `spanId?` - Link to a span
+- `source?` - Source type (DatasetItemSource enum)
+- `data?` - Arbitrary data fields (flexible schema)
+
+### DatasetItemSource Enum
+
+- `DatasetItemSource::SDK` - Created via SDK (default)
+- `DatasetItemSource::MANUAL` - Created manually
+- `DatasetItemSource::TRACE` - Created from a trace
+- `DatasetItemSource::SPAN` - Created from a span
 
 ## License
 
