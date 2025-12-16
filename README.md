@@ -10,7 +10,7 @@ The official PHP SDK for [Opik](https://www.comet.com/docs/opik/) - an LLM obser
 ## Installation
 
 ```bash
-composer require comet-ml/opik
+composer require klipitkas/opik-php
 ```
 
 ## Quick Start
@@ -517,3 +517,7 @@ Constructor parameters:
 ## License
 
 Apache-2.0
+
+## Trademarks
+
+Opik and Comet ML are trademarks of Comet ML, Inc. This project is not affiliated with, endorsed by, or sponsored by Comet ML, Inc.
