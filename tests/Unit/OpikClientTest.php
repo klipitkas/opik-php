@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Opik\Tests\Unit;
 
 use InvalidArgumentException;
+use Opik\Attachment\AttachmentClient;
+use Opik\Feedback\FeedbackScore;
 use Opik\OpikClient;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -283,5 +285,106 @@ final class OpikClientTest extends TestCase
         $this->expectExceptionMessage('Feedback score name cannot be empty');
 
         $client->deleteSpanFeedbackScore(spanId: 'span-123', name: '');
+    }
+
+    #[Test]
+    public function shouldThrowOnEmptyScoresArrayForTraces(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Scores array cannot be empty');
+
+        $client->logTracesFeedbackScores([]);
+    }
+
+    #[Test]
+    public function shouldThrowOnEmptyScoresArrayForSpans(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Scores array cannot be empty');
+
+        $client->logSpansFeedbackScores([]);
+    }
+
+    #[Test]
+    public function shouldThrowOnEmptyScoresArrayForThreads(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Scores array cannot be empty');
+
+        $client->logThreadsFeedbackScores([]);
+    }
+
+    #[Test]
+    public function shouldThrowOnMissingTraceIdInFeedbackScore(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Each FeedbackScore must have a traceId set');
+
+        $score = FeedbackScore::forSpan('span-123', 'quality', value: 0.9);
+        $client->logTracesFeedbackScores([$score]);
+    }
+
+    #[Test]
+    public function shouldThrowOnMissingSpanIdInFeedbackScore(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Each FeedbackScore must have a spanId set');
+
+        $score = FeedbackScore::forTrace('trace-123', 'quality', value: 0.9);
+        $client->logSpansFeedbackScores([$score]);
+    }
+
+    #[Test]
+    public function shouldThrowOnMissingThreadIdInFeedbackScore(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Each FeedbackScore must have a threadId set');
+
+        $score = FeedbackScore::forTrace('trace-123', 'quality', value: 0.9);
+        $client->logThreadsFeedbackScores([$score]);
+    }
+
+    #[Test]
+    public function shouldThrowOnEmptyThreadIdForClose(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Thread ID cannot be empty');
+
+        $client->closeThread(threadId: '');
+    }
+
+    #[Test]
+    public function shouldThrowOnEmptyThreadIdsArrayForClose(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Thread IDs array cannot be empty');
+
+        $client->closeThreads(threadIds: []);
+    }
+
+    #[Test]
+    public function shouldReturnAttachmentClient(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $attachmentClient = $client->getAttachmentClient();
+
+        self::assertInstanceOf(AttachmentClient::class, $attachmentClient);
     }
 }
