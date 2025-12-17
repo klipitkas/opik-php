@@ -6,6 +6,7 @@
 
 ## Table of Contents
 
+- [SDK Comparison](#sdk-comparison)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
@@ -19,6 +20,75 @@
   - [Attachments](#attachments)
 - [API Reference](#api-reference)
 - [Development](#development)
+
+---
+
+## SDK Comparison
+
+This table compares feature coverage between the official SDKs and this community PHP SDK.
+
+| Category | Feature | Python | TypeScript | PHP | Notes |
+|----------|---------|:------:|:----------:|:---:|-------|
+| **Tracing** | Traces & Spans | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Nested Spans | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Search (OQL) | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Span Types | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Usage Tracking | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Cost Calculation | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | `@track` Decorator | :white_check_mark: | :white_check_mark: | :x: | PHP lacks decorators |
+| **Feedback** | Feedback Scores | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Batch Feedback | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Threads | :white_check_mark: | :x: | :white_check_mark: | Full support |
+| **Datasets** | CRUD Operations | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Flexible Schema | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | JSON Import/Export | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| **Experiments** | Create & Manage | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Log Items | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| **Prompts** | Text Prompts | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Chat Prompts | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| | Version History | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
+| **Attachments** | Upload/Download | :white_check_mark: | :x: | :white_check_mark: | Full support |
+| **Evaluation** | Heuristic Metrics | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | LLM Judge Metrics | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | `evaluate()` | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| **Integrations** | OpenAI | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | LangChain | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | Other Frameworks | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| **Advanced** | Guardrails | :white_check_mark: | :x: | :x: | Not implemented |
+| | Simulation | :white_check_mark: | :x: | :x: | Not implemented |
+| | CLI Commands | :white_check_mark: | :x: | :x: | Not implemented |
+
+### Coverage Summary
+
+| SDK | Core Features | Advanced Features | Overall |
+|-----|:-------------:|:-----------------:|:-------:|
+| **Python** (Official) | 100% | 100% | 100% |
+| **TypeScript** (Official) | ~90% | ~60% | ~80% |
+| **PHP** (Community) | ~85% | ~15% | **~60%** |
+
+### What's Missing in PHP SDK
+
+**High Priority (Core Functionality):**
+
+- Evaluation framework (`evaluate()` function with metrics)
+- Cost calculation for LLM calls
+- JSON import/export for datasets
+
+**Medium Priority (Integrations):**
+
+- OpenAI integration for automatic tracing
+- Other LLM provider integrations
+
+**Low Priority (Advanced):**
+
+- Guardrails (PII detection, topic filtering)
+- Simulation framework
+- CLI commands
+- Local recording for testing
+
+### Contributing
+
+Contributions are welcome! If you'd like to help implement missing features, please see the [Development](#development) section.
 
 ---
 
