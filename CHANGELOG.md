@@ -2,6 +2,16 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.11.0] - 2025-12-17
+
+### Added
+
+- SDK comparison table in README showing feature coverage vs Python and TypeScript SDKs
+
+### Changed
+
+- License changed from Apache-2.0 to MIT
+
 ## [0.10.0] - 2025-12-17
 
 ### Added
