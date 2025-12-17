@@ -2,6 +2,12 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.12.0] - 2025-12-17
+
+### Removed
+
+- Unused TrackHandler, Track attribute, and TraceContext classes
+
 ## [0.11.0] - 2025-12-17
 
 ### Added
