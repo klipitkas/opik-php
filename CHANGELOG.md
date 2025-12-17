@@ -2,6 +2,17 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.9.0] - 2025-12-17
+
+### Added
+
+- GitHub Actions CI workflow for automated testing on PHP 8.1, 8.2, 8.3, and 8.4
+- PCOV coverage driver support in CI
+
+### Changed
+
+- Renamed default branch from `master` to `main`
+
 ## [0.8.0] - 2025-12-16
 
 ### Added
