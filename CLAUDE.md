@@ -124,6 +124,13 @@ git config core.hooksPath .githooks
 - Use descriptive test names: `shouldCreateTraceWithValidInput`
 - Group tests by feature in separate test classes
 
+### Integration Tests
+
+- **Always verify values, not just keys** - Assert that sent values match retrieved values
+- **Assert exact counts** - Use `assertCount()` when creating known quantities
+- **Clean up in tearDown()** - Delete test data using `deleteTraces()`
+- **Wait for backend** - Use `usleep(500000)` after flush for processing
+
 ## Configuration Files
 
 - **composer.json**: Dependencies and PSR-4 autoloading

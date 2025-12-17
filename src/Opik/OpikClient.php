@@ -949,6 +949,24 @@ final class OpikClient
     }
 
     /**
+     * Get a project by name.
+     *
+     * @param string $name The project name
+     *
+     * @throws InvalidArgumentException If name is empty
+     *
+     * @return array<string, mixed> The project data
+     */
+    public function getProjectByName(string $name): array
+    {
+        if (empty(trim($name))) {
+            throw new InvalidArgumentException('Project name cannot be empty');
+        }
+
+        return $this->httpClient->post('v1/private/projects/retrieve', ['name' => $name]);
+    }
+
+    /**
      * Get the URL for a project in the current workspace.
      *
      * @param string|null $projectName Project name (uses default if not provided)
@@ -1112,6 +1130,54 @@ final class OpikClient
         }
 
         $this->httpClient->post("v1/private/traces/{$traceId}/feedback-scores/delete", ['name' => $name]);
+    }
+
+    /**
+     * Delete traces by IDs.
+     *
+     * @param array<int, string> $ids List of trace IDs to delete
+     *
+     * @throws InvalidArgumentException If ids array is empty
+     */
+    public function deleteTraces(array $ids): void
+    {
+        if (empty($ids)) {
+            throw new InvalidArgumentException('Trace IDs array cannot be empty');
+        }
+
+        $this->httpClient->post('v1/private/traces/delete', ['ids' => $ids]);
+    }
+
+    /**
+     * Delete projects by IDs.
+     *
+     * @param array<int, string> $ids List of project IDs to delete
+     *
+     * @throws InvalidArgumentException If ids array is empty
+     */
+    public function deleteProjects(array $ids): void
+    {
+        if (empty($ids)) {
+            throw new InvalidArgumentException('Project IDs array cannot be empty');
+        }
+
+        $this->httpClient->post('v1/private/projects/delete', ['ids' => $ids]);
+    }
+
+    /**
+     * Delete a project by ID.
+     *
+     * @param string $id The project ID to delete
+     *
+     * @throws InvalidArgumentException If id is empty
+     */
+    public function deleteProject(string $id): void
+    {
+        if (empty(trim($id))) {
+            throw new InvalidArgumentException('Project ID cannot be empty');
+        }
+
+        $this->httpClient->delete("v1/private/projects/{$id}");
     }
 
     /**

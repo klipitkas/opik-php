@@ -18,10 +18,10 @@ final class BatchQueue
     /** @var array<int, self> */
     private static array $instances = [];
 
-    /** @var array<int, Message> */
+    /** @var array<string, Message> */
     private array $traceMessages = [];
 
-    /** @var array<int, Message> */
+    /** @var array<string, Message> */
     private array $spanMessages = [];
 
     /** @var array<int, Message> */
@@ -62,9 +62,11 @@ final class BatchQueue
             'trace_id' => $message->data['trace_id'] ?? null,
         ]);
 
+        // For traces and spans, use ID as key to keep only the latest version
+        // This prevents duplicate entries when update() is called after creation
         match ($message->type) {
-            MessageType::CREATE_TRACE, MessageType::UPDATE_TRACE => $this->traceMessages[] = $message,
-            MessageType::CREATE_SPAN, MessageType::UPDATE_SPAN => $this->spanMessages[] = $message,
+            MessageType::CREATE_TRACE, MessageType::UPDATE_TRACE => $this->traceMessages[$message->data['id']] = $message,
+            MessageType::CREATE_SPAN, MessageType::UPDATE_SPAN => $this->spanMessages[$message->data['id']] = $message,
             MessageType::ADD_FEEDBACK_SCORE => $this->feedbackScoreMessages[] = $message,
         };
 
@@ -94,7 +96,7 @@ final class BatchQueue
 
         $traces = array_map(
             static fn (Message $m) => $m->data,
-            $this->traceMessages,
+            array_values($this->traceMessages),
         );
 
         try {
@@ -118,7 +120,7 @@ final class BatchQueue
 
         $spans = array_map(
             static fn (Message $m) => $m->data,
-            $this->spanMessages,
+            array_values($this->spanMessages),
         );
 
         try {

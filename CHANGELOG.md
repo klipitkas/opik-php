@@ -2,6 +2,24 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.10.0] - 2025-12-17
+
+### Added
+
+- Integration tests for Dataset operations (`DatasetIntegrationTest`)
+- Integration tests for Prompt operations (`PromptIntegrationTest`)
+- Unit tests for BatchQueue message deduplication
+- `getProjectByName()` method for retrieving a project by name
+- `deleteTraces()` method for batch deleting traces by IDs
+- `deleteProjects()` method for batch deleting projects by IDs
+- `deleteProject()` method for deleting a single project by ID
+- CI workflow now runs integration tests against Opik Cloud
+
+### Fixed
+
+- BatchQueue now deduplicates trace and span messages by ID, keeping only the latest version
+- Previously, multiple updates to the same trace/span could result in lost updates due to race conditions
+
 ## [0.9.0] - 2025-12-17
 
 ### Added
