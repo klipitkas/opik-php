@@ -582,7 +582,7 @@ composer format:check
 
 ## License
 
-Apache-2.0
+MIT
 
 ## Trademarks
 
