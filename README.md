@@ -48,7 +48,7 @@ This table compares feature coverage between the official SDKs and this communit
 | | Chat Prompts | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Version History | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | **Attachments** | Upload/Download | :white_check_mark: | :x: | :white_check_mark: | Full support |
-| **Evaluation** | Heuristic Metrics | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| **Evaluation** | Heuristic Metrics | :white_check_mark: | :white_check_mark: | :white_check_mark: | ExactMatch, Contains, RegexMatch, IsJson |
 | | LLM Judge Metrics | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
 | | `evaluate()` | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
 | **Integrations** | OpenAI | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
@@ -64,7 +64,7 @@ This table compares feature coverage between the official SDKs and this communit
 |-----|:-------------:|:-----------------:|:-------:|
 | **Python** (Official) | 100% | 100% | 100% |
 | **TypeScript** (Official) | ~90% | ~60% | ~80% |
-| **PHP** (Community) | ~85% | ~15% | **~60%** |
+| **PHP** (Community) | ~90% | ~20% | **~65%** |
 
 ### What's Missing in PHP SDK
 
@@ -519,6 +519,59 @@ $content = $attachmentClient->downloadAttachment(
     mimeType: 'application/pdf',
 );
 ```
+
+---
+
+### Evaluation Metrics
+
+The SDK provides heuristic metrics for evaluating LLM outputs:
+
+```php
+use Opik\Evaluation\Metrics\ExactMatch;
+use Opik\Evaluation\Metrics\Contains;
+use Opik\Evaluation\Metrics\RegexMatch;
+use Opik\Evaluation\Metrics\IsJson;
+
+// ExactMatch - checks for exact equality
+$metric = new ExactMatch();
+$result = $metric->score([
+    'output' => 'hello world',
+    'expected' => 'hello world',
+]);
+echo $result->value; // 1.0 (match) or 0.0 (no match)
+
+// Contains - checks if output contains expected substring
+$metric = new Contains(caseSensitive: false);
+$result = $metric->score([
+    'output' => 'Hello World',
+    'expected' => 'hello',
+]);
+echo $result->value; // 1.0
+
+// RegexMatch - checks if output matches a regex pattern
+$metric = new RegexMatch();
+$result = $metric->score([
+    'output' => 'Contact: test@example.com',
+    'pattern' => '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/',
+]);
+echo $result->value; // 1.0
+
+// IsJson - checks if output is valid JSON
+$metric = new IsJson();
+$result = $metric->score([
+    'output' => '{"key": "value"}',
+]);
+echo $result->value; // 1.0
+```
+
+#### Available Metrics
+
+| Metric | Description |
+|--------|-------------|
+| `ExactMatch` | Checks if output exactly equals expected (strict comparison) |
+| `Contains` | Checks if output contains expected substring (supports case-insensitive) |
+| `RegexMatch` | Checks if output matches a regex pattern |
+| `IsJson` | Checks if output is valid JSON |
 
 ---
 

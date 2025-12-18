@@ -2,6 +2,24 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.15.0] - 2025-12-18
+
+### Added
+
+- Heuristic evaluation metrics framework:
+  - `BaseMetric` abstract class for creating custom metrics
+  - `ScoreResult` value object for metric results
+  - `ExactMatch` metric for exact string comparison
+  - `Contains` metric with case-sensitivity option
+  - `RegexMatch` metric for pattern matching
+  - `IsJson` metric for JSON validation
+- Unit tests for all metrics (34 new tests)
+- Metrics documentation in README with usage examples
+
+### Changed
+
+- Updated SDK comparison coverage to 65%
+
 ## [0.14.0] - 2025-12-18
 
 ### Added
