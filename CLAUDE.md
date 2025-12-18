@@ -209,6 +209,12 @@ Always run `composer format` before committing to ensure consistent code style. 
 git config core.hooksPath .githooks
 ```
 
+## Git Commit Guidelines
+
+- **Do NOT include** Co-Authored-By lines in commit messages
+- **Do NOT include** "Generated with Claude" or similar attribution
+- Write clean, standard commit messages without AI attribution
+
 ## Release instructions
 
 1. Run `composer format` - Format all code
