@@ -41,7 +41,7 @@ This table compares feature coverage between the official SDKs and this communit
 | | Threads | :white_check_mark: | :x: | :white_check_mark: | Full support |
 | **Datasets** | CRUD Operations | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Flexible Schema | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
-| | JSON Import/Export | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | JSON Import/Export | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | **Experiments** | Create & Manage | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Log Items | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | **Prompts** | Text Prompts | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
@@ -72,7 +72,6 @@ This table compares feature coverage between the official SDKs and this communit
 
 - Evaluation framework (`evaluate()` function with metrics)
 - Cost calculation for LLM calls
-- JSON import/export for datasets
 
 **Medium Priority (Integrations):**
 
@@ -351,6 +350,33 @@ $dataset->clear(); // Delete all
 // List/delete datasets
 $datasets = $client->getDatasets();
 $client->deleteDataset('dataset-name');
+```
+
+#### JSON Import/Export
+
+```php
+// Import from JSON string
+$json = '[{"input": "question 1", "output": "answer 1"}, {"input": "question 2", "output": "answer 2"}]';
+$dataset->insertFromJson($json);
+
+// Import with key mapping (rename keys)
+$json = '[{"Question": "What is PHP?", "Expected Answer": "A language"}]';
+$dataset->insertFromJson($json, keysMapping: [
+    'Question' => 'input',
+    'Expected Answer' => 'expected_output',
+]);
+
+// Import while ignoring certain keys
+$dataset->insertFromJson($json, ignoreKeys: ['internal_id', 'debug_info']);
+
+// Export to JSON string
+$json = $dataset->toJson();
+
+// Export with key mapping
+$json = $dataset->toJson(keysMapping: [
+    'input' => 'Question',
+    'expected_output' => 'Expected Answer',
+]);
 ```
 
 ---
