@@ -50,7 +50,7 @@ This table compares feature coverage between the official SDKs and this communit
 | **Attachments** | Upload/Download | :white_check_mark: | :x: | :white_check_mark: | Full support |
 | **Evaluation** | Heuristic Metrics | :white_check_mark: | :white_check_mark: | :white_check_mark: | ExactMatch, Contains, RegexMatch, IsJson |
 | | LLM Judge Metrics | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
-| | `evaluate()` | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | `evaluate()` | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | **Integrations** | OpenAI | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
 | | LangChain | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
 | | Other Frameworks | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
@@ -64,13 +64,13 @@ This table compares feature coverage between the official SDKs and this communit
 |-----|:-------------:|:-----------------:|:-------:|
 | **Python** (Official) | 100% | 100% | 100% |
 | **TypeScript** (Official) | ~90% | ~60% | ~80% |
-| **PHP** (Community) | ~95% | ~20% | **~70%** |
+| **PHP** (Community) | ~95% | ~25% | **~75%** |
 
 ### What's Missing in PHP SDK
 
 **High Priority (Core Functionality):**
 
-- Evaluation framework (`evaluate()` function with metrics)
+- LLM Judge Metrics (AnswerRelevance, Hallucination, etc.)
 
 **Medium Priority (Integrations):**
 
@@ -600,6 +600,64 @@ echo $result->value; // 1.0
 | `RegexMatch` | Checks if output matches a regex pattern |
 | `IsJson` | Checks if output is valid JSON |
 
+#### Evaluation Function
+
+Run evaluations against datasets with automatic experiment tracking:
+
+```php
+use Opik\Evaluation\Metrics\ExactMatch;
+use Opik\Evaluation\Metrics\Contains;
+
+// Get or create a dataset
+$dataset = $client->getOrCreateDataset('qa-dataset');
+$dataset->insert([
+    new DatasetItem(data: [
+        'input' => 'What is PHP?',
+        'expected' => 'programming language',
+    ]),
+    new DatasetItem(data: [
+        'input' => 'What is Python?',
+        'expected' => 'programming language',
+    ]),
+]);
+
+// Define your task function
+$task = function (array $item): array {
+    // Your LLM call or processing logic here
+    $response = $llm->complete($item['input']);
+    return ['output' => $response];
+};
+
+// Run evaluation
+$result = $client->evaluate(
+    dataset: $dataset,
+    task: $task,
+    scoringMetrics: [
+        new ExactMatch(),
+        new Contains(),
+    ],
+    experimentName: 'my-evaluation',
+);
+
+// Access results
+echo "Evaluated {$result->count()} items in {$result->durationSeconds}s\n";
+echo "Average exact_match: {$result->getAverageScore('exact_match')}\n";
+echo "Average contains: {$result->getAverageScore('contains')}\n";
+
+// Get all average scores
+$averages = $result->getAverageScores();
+foreach ($averages as $metric => $score) {
+    echo "{$metric}: {$score}\n";
+}
+```
+
+The `evaluate()` function:
+- Creates an experiment for tracking results
+- Runs the task function on each dataset item
+- Calculates scores using the provided metrics
+- Logs feedback scores to traces
+- Returns detailed results with averages
+
 ---
 
 ## API Reference
@@ -637,6 +695,7 @@ echo $result->value; // 1.0
 | | `getPromptHistory(name)` | Get versions |
 | | `deletePrompts(ids)` | Delete prompts |
 | **Attachments** | `getAttachmentClient()` | Get attachment client |
+| **Evaluation** | `evaluate(dataset, task, ...)` | Run evaluation with metrics |
 | **Utilities** | `authCheck()` | Verify credentials |
 | | `flush()` | Send pending data |
 | | `getConfig()` | Get configuration |

@@ -2,6 +2,22 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.17.0] - 2025-12-18
+
+### Added
+
+- `evaluate()` function for running evaluations against datasets with metrics
+  - `Evaluator` class for orchestrating evaluations
+  - `EvaluationResult` class with average score calculation
+  - `EvaluationTestResult` class for per-item results
+- Convenience `$client->evaluate()` method on OpikClient
+- Unit tests for evaluation framework (9 new tests)
+- Evaluation documentation in README
+
+### Changed
+
+- Updated SDK comparison coverage to 75%
+
 ## [0.16.0] - 2025-12-18
 
 ### Added

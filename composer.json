@@ -1,7 +1,7 @@
 {
   "name": "klipitkas/opik-php",
   "description": "Opik PHP SDK - LLM observability and evaluation platform",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "type": "library",
   "license": "MIT",
   "keywords": [

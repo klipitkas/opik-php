@@ -12,6 +12,9 @@ use Opik\Api\HttpClientInterface;
 use Opik\Attachment\AttachmentClient;
 use Opik\Config\Config;
 use Opik\Dataset\Dataset;
+use Opik\Evaluation\EvaluationResult;
+use Opik\Evaluation\Evaluator;
+use Opik\Evaluation\Metrics\BaseMetric;
 use Opik\Exception\ConfigurationException;
 use Opik\Exception\OpikException;
 use Opik\Experiment\Experiment;
@@ -1228,6 +1231,57 @@ final class OpikClient
     public function getAttachmentClient(): AttachmentClient
     {
         return new AttachmentClient($this->httpClient, $this->config);
+    }
+
+    /**
+     * Evaluate a task function against a dataset using specified metrics.
+     *
+     * This is a convenience method that creates an Evaluator and runs the evaluation.
+     *
+     * @param Dataset $dataset The dataset to evaluate against
+     * @param callable $task The task function that processes each dataset item
+     *                       Signature: fn(array $item): array
+     * @param array<int, BaseMetric> $scoringMetrics Metrics to evaluate the task output
+     * @param string|null $experimentName Optional name for the experiment
+     * @param array<string, string> $scoringKeyMapping Optional mapping of keys for scoring
+     * @param int|null $nbSamples Optional limit on number of samples to evaluate
+     *
+     * @return EvaluationResult The evaluation results
+     *
+     * @example
+     * ```php
+     * use Opik\Evaluation\Metrics\ExactMatch;
+     * use Opik\Evaluation\Metrics\Contains;
+     *
+     * $result = $client->evaluate(
+     *     dataset: $dataset,
+     *     task: fn(array $item) => ['output' => $llm->complete($item['input'])],
+     *     scoringMetrics: [new ExactMatch(), new Contains()],
+     *     experimentName: 'my-experiment',
+     * );
+     *
+     * echo "Evaluated {$result->count()} items\n";
+     * echo "ExactMatch average: {$result->getAverageScore('exact_match')}\n";
+     * ```
+     */
+    public function evaluate(
+        Dataset $dataset,
+        callable $task,
+        array $scoringMetrics = [],
+        ?string $experimentName = null,
+        array $scoringKeyMapping = [],
+        ?int $nbSamples = null,
+    ): EvaluationResult {
+        $evaluator = new Evaluator($this);
+
+        return $evaluator->evaluate(
+            dataset: $dataset,
+            task: $task,
+            scoringMetrics: $scoringMetrics,
+            experimentName: $experimentName,
+            scoringKeyMapping: $scoringKeyMapping,
+            nbSamples: $nbSamples,
+        );
     }
 
     /**
