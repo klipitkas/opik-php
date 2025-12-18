@@ -34,7 +34,7 @@ This table compares feature coverage between the official SDKs and this communit
 | | Search (OQL) | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Span Types | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Usage Tracking | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
-| | Cost Calculation | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
+| | Cost Calculation | :white_check_mark: | :white_check_mark: | :white_check_mark: | User-provided pricing |
 | | `@track` Decorator | :white_check_mark: | :white_check_mark: | :x: | PHP lacks decorators |
 | **Feedback** | Feedback Scores | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Batch Feedback | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
@@ -64,14 +64,13 @@ This table compares feature coverage between the official SDKs and this communit
 |-----|:-------------:|:-----------------:|:-------:|
 | **Python** (Official) | 100% | 100% | 100% |
 | **TypeScript** (Official) | ~90% | ~60% | ~80% |
-| **PHP** (Community) | ~90% | ~20% | **~65%** |
+| **PHP** (Community) | ~95% | ~20% | **~70%** |
 
 ### What's Missing in PHP SDK
 
 **High Priority (Core Functionality):**
 
 - Evaluation framework (`evaluate()` function with metrics)
-- Cost calculation for LLM calls
 
 **Medium Priority (Integrations):**
 
@@ -234,6 +233,34 @@ $span = $client->getSpanContent('span-id');
 | `SpanType::LLM` | LLM API call |
 | `SpanType::TOOL` | Tool/function call |
 | `SpanType::GUARDRAIL` | Guardrail check |
+
+#### Cost Calculation
+
+Calculate and track LLM costs using your own pricing:
+
+```php
+use Opik\Cost\CostCalculator;
+use Opik\Tracer\Usage;
+
+$usage = new Usage(promptTokens: 1000, completionTokens: 500);
+
+// Using per-million token pricing (common format)
+$cost = CostCalculator::calculateFromMillionPricing(
+    $usage,
+    inputCostPerMillion: 2.50,   // $2.50 per 1M input tokens
+    outputCostPerMillion: 10.00, // $10.00 per 1M output tokens
+);
+
+// Or using per-token pricing
+$cost = CostCalculator::calculate(
+    $usage,
+    inputCostPerToken: 0.0000025,
+    outputCostPerToken: 0.00001,
+);
+
+// Attach cost to span
+$span->update(totalCost: $cost);
+```
 
 ---
 

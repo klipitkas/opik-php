@@ -212,7 +212,7 @@ git config core.hooksPath .githooks
 
 1. Run `composer format` - Format all code
 2. Run `composer test` - Ensure all tests pass
-3. Update README.md - Document any new public methods/features added
+3. Update README.md - Document any new public methods/features added, update SDK coverare and summary if needed
 4. Update CHANGELOG.md - Add entry for the new version with changes
 5. Update composer.json version - Follow semver:
    - Patch (0.0.X) for bug fixes

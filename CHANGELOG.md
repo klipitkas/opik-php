@@ -2,6 +2,20 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.16.0] - 2025-12-18
+
+### Added
+
+- `CostCalculator` utility class for calculating LLM costs
+  - `calculate()` method using per-token pricing
+  - `calculateFromMillionPricing()` convenience method for per-million token pricing
+- Unit tests for cost calculation (7 new tests)
+- Cost calculation documentation in README
+
+### Changed
+
+- Updated SDK comparison coverage to 70%
+
 ## [0.15.0] - 2025-12-18
 
 ### Added
