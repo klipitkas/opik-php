@@ -2,6 +2,19 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.18.0] - 2025-12-18
+
+### Added
+
+- New heuristic evaluation metrics:
+  - `Equals` metric for equality comparison with strict/loose mode support
+  - `LevenshteinRatio` metric for text similarity based on edit distance
+- Unit tests for new metrics (25 new tests)
+
+### Fixed
+
+- Fixed inline fully qualified class name in Evaluator.php (now uses imported FeedbackScore)
+
 ## [0.17.0] - 2025-12-18
 
 ### Added

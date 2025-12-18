@@ -48,7 +48,7 @@ This table compares feature coverage between the official SDKs and this communit
 | | Chat Prompts | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | | Version History | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | **Attachments** | Upload/Download | :white_check_mark: | :x: | :white_check_mark: | Full support |
-| **Evaluation** | Heuristic Metrics | :white_check_mark: | :white_check_mark: | :white_check_mark: | ExactMatch, Contains, RegexMatch, IsJson |
+| **Evaluation** | Heuristic Metrics | :white_check_mark: | :white_check_mark: | :white_check_mark: | ExactMatch, Contains, RegexMatch, IsJson, Equals, LevenshteinRatio |
 | | LLM Judge Metrics | :white_check_mark: | :white_check_mark: | :x: | Not implemented |
 | | `evaluate()` | :white_check_mark: | :white_check_mark: | :white_check_mark: | Full support |
 | **Integrations** | OpenAI | :white_check_mark: | :white_check_mark: | :x: | Not implemented |

@@ -108,7 +108,8 @@ git config core.hooksPath .githooks
 ### Import Strategy
 
 - Use `HttpClientInterface` not `HttpClient` for type hints
-- Import classes at top of file, not inline
+- Always import classes with `use` statements at the top of the file
+- Never use fully qualified class names inline (e.g., use `FeedbackScore::forTrace()` not `\Opik\Feedback\FeedbackScore::forTrace()`)
 
 ### Architecture Principles
 

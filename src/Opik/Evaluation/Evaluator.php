@@ -10,6 +10,7 @@ use Opik\Evaluation\Metrics\BaseMetric;
 use Opik\Evaluation\Metrics\ScoreResult;
 use Opik\Experiment\Experiment;
 use Opik\Experiment\ExperimentItem;
+use Opik\Feedback\FeedbackScore;
 use Opik\OpikClient;
 use Throwable;
 
@@ -102,7 +103,7 @@ final class Evaluator
             if ($traceId !== null) {
                 foreach ($scoreResults as $score) {
                     $this->client->logTracesFeedbackScores([
-                        \Opik\Feedback\FeedbackScore::forTrace(
+                        FeedbackScore::forTrace(
                             $traceId,
                             $score->name,
                             value: $score->value,
