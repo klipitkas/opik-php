@@ -86,7 +86,7 @@ final class OpikClient
         $this->validateConfig();
 
         $this->httpClient = new HttpClient($this->config, $logger);
-        $this->batchQueue = new BatchQueue($this->httpClient, $this->config, $logger);
+        $this->batchQueue = new BatchQueue($this->httpClient, $logger);
     }
 
     /**

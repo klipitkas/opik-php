@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Opik\Tests\Unit\Tracer;
 
 use Opik\Api\HttpClientInterface;
-use Opik\Config\Config;
 use Opik\Message\BatchQueue;
 use Opik\Tracer\ErrorInfo;
 use Opik\Tracer\SpanType;
@@ -20,8 +19,7 @@ final class TraceTest extends TestCase
     protected function setUp(): void
     {
         $httpClient = $this->createMock(HttpClientInterface::class);
-        $config = new Config();
-        $this->batchQueue = new BatchQueue($httpClient, $config);
+        $this->batchQueue = new BatchQueue($httpClient);
     }
 
     #[Test]

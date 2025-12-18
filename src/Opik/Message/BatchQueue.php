@@ -29,15 +29,16 @@ final class BatchQueue
 
     private int $currentBatchSize = 0;
 
+    private float $lastFlushTime;
+
     private readonly LoggerInterface $logger;
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        Config $config,
         ?LoggerInterface $logger = null,
     ) {
-        unset($config);
         $this->logger = $logger ?? new NullLogger();
+        $this->lastFlushTime = microtime(true);
         self::$instances[spl_object_id($this)] = $this;
         self::registerGlobalShutdown();
     }
@@ -46,11 +47,22 @@ final class BatchQueue
     {
         $messageSize = \strlen(JsonEncoder::encode($message->data));
 
+        // Check batch size limit
         if ($this->currentBatchSize + $messageSize > Config::MAX_BATCH_SIZE_BYTES) {
             $this->logger->debug('Batch size limit reached, flushing', [
                 'current_size' => $this->currentBatchSize,
                 'message_size' => $messageSize,
                 'limit' => Config::MAX_BATCH_SIZE_BYTES,
+            ]);
+            $this->flush();
+        }
+
+        // Check time-based flush
+        $now = microtime(true);
+        if (($now - $this->lastFlushTime) * 1000 >= Config::FLUSH_INTERVAL_MS) {
+            $this->logger->debug('Flush interval reached, flushing', [
+                'time_since_last_flush_ms' => ($now - $this->lastFlushTime) * 1000,
+                'interval_ms' => Config::FLUSH_INTERVAL_MS,
             ]);
             $this->flush();
         }
@@ -71,6 +83,16 @@ final class BatchQueue
         };
 
         $this->currentBatchSize += $messageSize;
+
+        // Check batch count limit - flush when we have reached the max count
+        $messagesBatchCount = \count($this->traceMessages) + \count($this->spanMessages) + \count($this->feedbackScoreMessages);
+        if ($messagesBatchCount >= Config::MAX_BATCH_COUNT) {
+            $this->logger->debug('Batch count limit reached, flushing', [
+                'current_count' => $messagesBatchCount,
+                'limit' => Config::MAX_BATCH_COUNT,
+            ]);
+            $this->flush();
+        }
     }
 
     public function flush(): void
@@ -79,6 +101,7 @@ final class BatchQueue
         $this->flushSpans();
         $this->flushFeedbackScores();
         $this->currentBatchSize = 0;
+        $this->lastFlushTime = microtime(true);
     }
 
     public function isEmpty(): bool

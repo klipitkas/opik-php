@@ -12,9 +12,11 @@ final class Config
 
     public const DEFAULT_TIMEOUT_MS = 30000;
 
-    public const MAX_BATCH_SIZE_BYTES = 5 * 1024 * 1024;
+    public const MAX_BATCH_SIZE_BYTES = 1 * 1024 * 1024; // 1 MB batch size limit
 
-    public const FLUSH_INTERVAL_MS = 1000;
+    public const MAX_BATCH_COUNT = 25; // Maximum number of items per batch
+
+    public const FLUSH_INTERVAL_MS = 10000; // Flush every 10 seconds
 
     public const MAX_RETRIES = 3;
 
