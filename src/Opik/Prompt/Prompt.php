@@ -63,6 +63,8 @@ final class Prompt
 
     /**
      * @param array<string, mixed> $variables
+     *
+     * @return string|array<int, array<string, mixed>>
      */
     public function format(array $variables = [], ?string $commit = null): string|array
     {

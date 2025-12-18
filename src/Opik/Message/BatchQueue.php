@@ -33,6 +33,9 @@ final class BatchQueue
 
     private readonly LoggerInterface $logger;
 
+    /** @var callable(array<string, mixed>, Throwable): void|null */
+    private $onFlushFailure = null;
+
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         ?LoggerInterface $logger = null,
@@ -41,6 +44,27 @@ final class BatchQueue
         $this->lastFlushTime = microtime(true);
         self::$instances[spl_object_id($this)] = $this;
         self::registerGlobalShutdown();
+    }
+
+    /**
+     * Set a callback to be invoked when a flush operation fails.
+     *
+     * The callback receives the failed data and the exception.
+     * This allows users to implement custom error handling (e.g., save to file, send to Sentry).
+     *
+     * @param callable(array<string, mixed>, Throwable): void $callback
+     *
+     * @example
+     * ```php
+     * $client->getBatchQueue()->onFlushFailure(function(array $data, Throwable $e) {
+     *     error_log("Failed to flush: " . $e->getMessage());
+     *     file_put_contents('failed_data.json', json_encode($data), FILE_APPEND);
+     * });
+     * ```
+     */
+    public function onFlushFailure(callable $callback): void
+    {
+        $this->onFlushFailure = $callback;
     }
 
     public function enqueue(Message $message): void
@@ -130,6 +154,7 @@ final class BatchQueue
                 'count' => \count($traces),
                 'error' => $e->getMessage(),
             ]);
+            $this->invokeFlushFailureCallback(['traces' => $traces], $e);
         }
 
         $this->traceMessages = [];
@@ -154,6 +179,7 @@ final class BatchQueue
                 'count' => \count($spans),
                 'error' => $e->getMessage(),
             ]);
+            $this->invokeFlushFailureCallback(['spans' => $spans], $e);
         }
 
         $this->spanMessages = [];
@@ -178,9 +204,29 @@ final class BatchQueue
                 'count' => \count($scores),
                 'error' => $e->getMessage(),
             ]);
+            $this->invokeFlushFailureCallback(['feedback_scores' => $scores], $e);
         }
 
         $this->feedbackScoreMessages = [];
+    }
+
+    /**
+     * Invoke the flush failure callback if set.
+     *
+     * @param array<string, mixed> $data The data that failed to flush
+     * @param Throwable $exception The exception that caused the failure
+     */
+    private function invokeFlushFailureCallback(array $data, Throwable $exception): void
+    {
+        if ($this->onFlushFailure !== null) {
+            try {
+                ($this->onFlushFailure)($data, $exception);
+            } catch (Throwable $e) {
+                $this->logger->error('Flush failure callback threw an exception', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     private static function registerGlobalShutdown(): void

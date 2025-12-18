@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Opik\Tests\Unit\Tracer;
 
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Opik\Api\HttpClientInterface;
 use Opik\Message\BatchQueue;
 use Opik\Tracer\ErrorInfo;
@@ -194,5 +196,60 @@ final class TraceTest extends TestCase
 
         self::assertNull($trace->getThreadId());
         self::assertArrayNotHasKey('thread_id', $trace->toArray());
+    }
+
+    #[Test]
+    public function shouldRejectEndTimeBeforeStartTime(): void
+    {
+        $startTime = new DateTimeImmutable('2024-01-01 12:00:00');
+        $endTime = new DateTimeImmutable('2024-01-01 11:00:00');
+
+        $trace = new Trace(
+            batchQueue: $this->batchQueue,
+            name: 'test-trace',
+            projectName: 'test-project',
+            startTime: $startTime,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('End time cannot be before start time');
+
+        $trace->end($endTime);
+    }
+
+    #[Test]
+    public function shouldRejectEndTimeBeforeStartTimeInUpdate(): void
+    {
+        $startTime = new DateTimeImmutable('2024-01-01 12:00:00');
+        $endTime = new DateTimeImmutable('2024-01-01 11:00:00');
+
+        $trace = new Trace(
+            batchQueue: $this->batchQueue,
+            name: 'test-trace',
+            projectName: 'test-project',
+            startTime: $startTime,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('End time cannot be before start time');
+
+        $trace->update(endTime: $endTime);
+    }
+
+    #[Test]
+    public function shouldAcceptEndTimeEqualToStartTime(): void
+    {
+        $time = new DateTimeImmutable('2024-01-01 12:00:00');
+
+        $trace = new Trace(
+            batchQueue: $this->batchQueue,
+            name: 'test-trace',
+            projectName: 'test-project',
+            startTime: $time,
+        );
+
+        $trace->end($time);
+
+        self::assertArrayHasKey('end_time', $trace->toArray());
     }
 }

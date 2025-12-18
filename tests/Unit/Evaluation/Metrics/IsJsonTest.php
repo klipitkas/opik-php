@@ -5,144 +5,65 @@ declare(strict_types=1);
 namespace Opik\Tests\Unit\Evaluation\Metrics;
 
 use Opik\Evaluation\Metrics\IsJson;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class IsJsonTest extends TestCase
 {
     #[Test]
-    public function shouldReturnOneForValidJson(): void
+    #[DataProvider('validJsonCases')]
+    public function shouldReturnOneForValidJson(string $output): void
     {
-        $metric = new IsJson();
+        $result = (new IsJson())->score(['output' => $output]);
 
-        $result = $metric->score([
-            'output' => '{"name": "test", "value": 123}',
-        ]);
+        self::assertSame(1.0, $result->value);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function validJsonCases(): iterable
+    {
+        yield 'object' => ['{"name": "test", "value": 123}'];
+        yield 'array' => ['[1, 2, 3]'];
+        yield 'string' => ['"hello"'];
+        yield 'number' => ['123'];
+        yield 'boolean' => ['true'];
+        yield 'null' => ['null'];
+        yield 'empty object' => ['{}'];
+    }
+
+    #[Test]
+    #[DataProvider('invalidJsonCases')]
+    public function shouldReturnZeroForInvalidJson(mixed $output): void
+    {
+        $result = (new IsJson())->score(['output' => $output]);
+
+        self::assertSame(0.0, $result->value);
+    }
+
+    /** @return iterable<string, array{mixed}> */
+    public static function invalidJsonCases(): iterable
+    {
+        yield 'plain text' => ['not valid json'];
+        yield 'trailing comma' => ['{"key": "value",}'];
+        yield 'unquoted keys' => ['{key: "value"}'];
+        yield 'non-string' => [123];
+    }
+
+    #[Test]
+    public function shouldUseDefaultName(): void
+    {
+        $result = (new IsJson())->score(['output' => '{}']);
 
         self::assertSame('is_json', $result->name);
-        self::assertSame(1.0, $result->value);
         self::assertStringContainsString('valid JSON', $result->reason);
-    }
-
-    #[Test]
-    public function shouldReturnZeroForInvalidJson(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => 'not valid json',
-        ]);
-
-        self::assertSame(0.0, $result->value);
-        self::assertStringContainsString('not valid JSON', $result->reason);
-    }
-
-    #[Test]
-    public function shouldValidateJsonArray(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => '[1, 2, 3]',
-        ]);
-
-        self::assertSame(1.0, $result->value);
-    }
-
-    #[Test]
-    public function shouldValidateJsonString(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => '"hello"',
-        ]);
-
-        self::assertSame(1.0, $result->value);
-    }
-
-    #[Test]
-    public function shouldValidateJsonNumber(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => '123',
-        ]);
-
-        self::assertSame(1.0, $result->value);
-    }
-
-    #[Test]
-    public function shouldValidateJsonBoolean(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => 'true',
-        ]);
-
-        self::assertSame(1.0, $result->value);
-    }
-
-    #[Test]
-    public function shouldValidateJsonNull(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => 'null',
-        ]);
-
-        self::assertSame(1.0, $result->value);
-    }
-
-    #[Test]
-    public function shouldReturnZeroForNonString(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => 123,
-        ]);
-
-        self::assertSame(0.0, $result->value);
-        self::assertStringContainsString('not a string', $result->reason);
     }
 
     #[Test]
     public function shouldUseCustomName(): void
     {
-        $metric = new IsJson('json_validator');
+        $result = (new IsJson('custom'))->score(['output' => '{}']);
 
-        $result = $metric->score([
-            'output' => '{}',
-        ]);
-
-        self::assertSame('json_validator', $result->name);
-    }
-
-    #[Test]
-    public function shouldRejectMalformedJson(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => '{"key": "value",}', // trailing comma
-        ]);
-
-        self::assertSame(0.0, $result->value);
-    }
-
-    #[Test]
-    public function shouldRejectUnquotedKeys(): void
-    {
-        $metric = new IsJson();
-
-        $result = $metric->score([
-            'output' => '{key: "value"}',
-        ]);
-
-        self::assertSame(0.0, $result->value);
+        self::assertSame('custom', $result->name);
     }
 }

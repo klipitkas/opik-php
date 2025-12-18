@@ -2,6 +2,20 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.19.0] - 2025-12-18
+
+### Added
+
+- Failure callback for BatchQueue via `onFlushFailure()` for custom error handling
+- Temporal validation for traces and spans (end time cannot be before start time)
+- Unit tests for failure callbacks (5 new tests)
+- Unit tests for temporal validation (6 new tests)
+
+### Changed
+
+- Increased PHPStan analysis level from 5 to 6
+- Refactored metric tests to use data providers for better maintainability
+
 ## [0.18.0] - 2025-12-18
 
 ### Added

@@ -12,6 +12,8 @@ use Opik\Message\MessageType;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use RuntimeException;
+use Throwable;
 
 final class BatchQueueTest extends TestCase
 {
@@ -225,5 +227,114 @@ final class BatchQueueTest extends TestCase
 
         // Should have flushed due to time limit
         self::assertSame(1, $flushCount);
+    }
+
+    #[Test]
+    public function shouldInvokeFailureCallbackOnFlushError(): void
+    {
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->method('post')->willThrowException(new RuntimeException('Network error'));
+
+        $batchQueue = new BatchQueue($httpClient);
+
+        $callbackInvoked = false;
+        $capturedData = [];
+        /** @var Throwable|null $capturedException */
+        $capturedException = null;
+
+        $batchQueue->onFlushFailure(function (array $data, Throwable $e) use (&$callbackInvoked, &$capturedData, &$capturedException) {
+            $callbackInvoked = true;
+            $capturedData = $data;
+            $capturedException = $e;
+        });
+
+        $batchQueue->enqueue($this->traceMessage('trace-1', MessageType::CREATE_TRACE));
+        $batchQueue->flush();
+
+        self::assertTrue($callbackInvoked);
+        self::assertArrayHasKey('traces', $capturedData);
+        self::assertCount(1, $capturedData['traces']);
+        self::assertInstanceOf(RuntimeException::class, $capturedException);
+        self::assertSame('Network error', $capturedException->getMessage());
+    }
+
+    #[Test]
+    public function shouldNotFailWhenNoFailureCallbackSet(): void
+    {
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->method('post')->willThrowException(new RuntimeException('Network error'));
+
+        $batchQueue = new BatchQueue($httpClient);
+
+        // No callback set - should not throw
+        $batchQueue->enqueue($this->traceMessage('trace-1', MessageType::CREATE_TRACE));
+        $batchQueue->flush();
+
+        // Queue should be empty after flush (even on failure)
+        self::assertTrue($batchQueue->isEmpty());
+    }
+
+    #[Test]
+    public function shouldHandleFailureCallbackExceptions(): void
+    {
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->method('post')->willThrowException(new RuntimeException('Network error'));
+
+        $batchQueue = new BatchQueue($httpClient);
+
+        // Set a callback that throws
+        $batchQueue->onFlushFailure(function () {
+            throw new RuntimeException('Callback error');
+        });
+
+        // Should not throw even when callback throws
+        $batchQueue->enqueue($this->traceMessage('trace-1', MessageType::CREATE_TRACE));
+        $batchQueue->flush();
+
+        self::assertTrue($batchQueue->isEmpty());
+    }
+
+    #[Test]
+    public function shouldInvokeFailureCallbackForSpans(): void
+    {
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->method('post')->willThrowException(new RuntimeException('Network error'));
+
+        $batchQueue = new BatchQueue($httpClient);
+
+        $capturedData = [];
+        $batchQueue->onFlushFailure(function (array $data) use (&$capturedData) {
+            $capturedData = $data;
+        });
+
+        $batchQueue->enqueue($this->spanMessage('span-1', MessageType::CREATE_SPAN));
+        $batchQueue->flush();
+
+        self::assertArrayHasKey('spans', $capturedData);
+        self::assertCount(1, $capturedData['spans']);
+    }
+
+    #[Test]
+    public function shouldInvokeFailureCallbackForFeedbackScores(): void
+    {
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->method('put')->willThrowException(new RuntimeException('Network error'));
+
+        $batchQueue = new BatchQueue($httpClient);
+
+        $capturedData = [];
+        $batchQueue->onFlushFailure(function (array $data) use (&$capturedData) {
+            $capturedData = $data;
+        });
+
+        $batchQueue->enqueue(new Message(MessageType::ADD_FEEDBACK_SCORE, [
+            'id' => 'score-1',
+            'name' => 'accuracy',
+            'value' => 0.9,
+        ]));
+        $batchQueue->flush();
+
+        self::assertArrayHasKey('feedback_scores', $capturedData);
+        self::assertCount(1, $capturedData['feedback_scores']);
     }
 }

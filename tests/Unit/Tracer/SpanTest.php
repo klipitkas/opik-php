@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Opik\Tests\Unit\Tracer;
 
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Opik\Api\HttpClientInterface;
 use Opik\Message\BatchQueue;
 use Opik\Tracer\ErrorInfo;
@@ -213,5 +215,63 @@ final class SpanTest extends TestCase
         );
 
         self::assertArrayNotHasKey('total_estimated_cost', $span->toArray());
+    }
+
+    #[Test]
+    public function shouldRejectEndTimeBeforeStartTime(): void
+    {
+        $startTime = new DateTimeImmutable('2024-01-01 12:00:00');
+        $endTime = new DateTimeImmutable('2024-01-01 11:00:00');
+
+        $span = new Span(
+            batchQueue: $this->batchQueue,
+            traceId: 'trace-123',
+            name: 'test-span',
+            projectName: 'test-project',
+            startTime: $startTime,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('End time cannot be before start time');
+
+        $span->end($endTime);
+    }
+
+    #[Test]
+    public function shouldRejectEndTimeBeforeStartTimeInUpdate(): void
+    {
+        $startTime = new DateTimeImmutable('2024-01-01 12:00:00');
+        $endTime = new DateTimeImmutable('2024-01-01 11:00:00');
+
+        $span = new Span(
+            batchQueue: $this->batchQueue,
+            traceId: 'trace-123',
+            name: 'test-span',
+            projectName: 'test-project',
+            startTime: $startTime,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('End time cannot be before start time');
+
+        $span->update(endTime: $endTime);
+    }
+
+    #[Test]
+    public function shouldAcceptEndTimeEqualToStartTime(): void
+    {
+        $time = new DateTimeImmutable('2024-01-01 12:00:00');
+
+        $span = new Span(
+            batchQueue: $this->batchQueue,
+            traceId: 'trace-123',
+            name: 'test-span',
+            projectName: 'test-project',
+            startTime: $time,
+        );
+
+        $span->end($time);
+
+        self::assertArrayHasKey('end_time', $span->toArray());
     }
 }

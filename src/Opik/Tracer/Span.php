@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Opik\Tracer;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Opik\Message\BatchQueue;
 use Opik\Message\Message;
 use Opik\Message\MessageType;
@@ -193,6 +194,11 @@ final class Span
         }
 
         if ($endTime !== null) {
+            if ($endTime < $this->startTime) {
+                throw new InvalidArgumentException(
+                    'End time cannot be before start time',
+                );
+            }
             $this->endTime = $endTime;
         }
 
@@ -229,6 +235,8 @@ final class Span
      *
      * @param DateTimeImmutable|null $endTime Optional end time (current time if not provided)
      *
+     * @throws InvalidArgumentException If end time is before start time
+     *
      * @return self For method chaining
      */
     public function end(?DateTimeImmutable $endTime = null): self
@@ -237,7 +245,15 @@ final class Span
             return $this;
         }
 
-        $this->endTime = $endTime ?? DateTimeHelper::now();
+        $resolvedEndTime = $endTime ?? DateTimeHelper::now();
+
+        if ($resolvedEndTime < $this->startTime) {
+            throw new InvalidArgumentException(
+                'End time cannot be before start time',
+            );
+        }
+
+        $this->endTime = $resolvedEndTime;
         $this->ended = true;
         $this->sendUpdate();
 
