@@ -2,6 +2,30 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.14.0] - 2025-12-18
+
+### Added
+
+- `Dataset::insertFromJson()` method for importing dataset items from JSON strings
+  - Supports key mapping to rename fields during import
+  - Supports ignoring specific keys
+- `Dataset::toJson()` method for exporting dataset items to JSON strings
+  - Supports key mapping to rename fields during export
+- Unit tests for JSON import/export functionality
+
+## [0.13.0] - 2025-12-18
+
+### Changed
+
+- Reduced batch size from 5MB to 1MB for better memory usage
+- Added 25 item count limit per batch
+- Added 10-second time-based flush interval
+- Removed unused `Config` parameter from `BatchQueue` constructor
+
+### Added
+
+- Unit tests for batch count limit, size limit, and time-based flushing
+
 ## [0.12.0] - 2025-12-17
 
 ### Removed
