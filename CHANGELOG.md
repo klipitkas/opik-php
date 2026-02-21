@@ -2,6 +2,13 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.20.1] - 2026-02-21
+
+### Fixed
+
+- Updated `phpunit/phpunit` from 11.5.46 to 11.5.55 (fix unsafe deserialization vulnerability)
+- Updated `symfony/process` from 8.0.0 to 8.0.5 (fix argument escaping vulnerability on Windows)
+
 ## [0.20.0] - 2026-02-21
 
 ### Added
