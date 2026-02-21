@@ -213,4 +213,119 @@ final class PromptIntegrationTest extends TestCase
         self::assertArrayHasKey('commit', $version);
         self::assertArrayHasKey('template', $version);
     }
+
+    #[Test]
+    public function shouldCreatePromptWithTags(): void
+    {
+        self::assertNotNull($this->client);
+
+        $tags = ['production', 'v1'];
+
+        $prompt = $this->client->createPrompt(
+            name: $this->promptName,
+            template: 'Hello {{name}}!',
+            tags: $tags,
+        );
+        $this->createdPromptIds[] = $prompt->id;
+
+        usleep(500000);
+
+        $history = $this->client->getPromptHistory($this->promptName);
+
+        self::assertCount(1, $history);
+        self::assertArrayHasKey('tags', $history[0]);
+        self::assertContains('production', $history[0]['tags']);
+        self::assertContains('v1', $history[0]['tags']);
+    }
+
+    #[Test]
+    public function shouldUpdatePromptVersionTags(): void
+    {
+        self::assertNotNull($this->client);
+
+        $prompt = $this->client->createPrompt(
+            name: $this->promptName,
+            template: 'Hello {{name}}!',
+            tags: ['initial'],
+        );
+        $this->createdPromptIds[] = $prompt->id;
+
+        usleep(500000);
+
+        $history = $this->client->getPromptHistory($this->promptName);
+        $versionId = $history[0]['id'];
+
+        // Replace tags
+        $this->client->updatePromptVersionTags(
+            versionIds: [$versionId],
+            tags: ['replaced', 'new'],
+            merge: false,
+        );
+
+        usleep(500000);
+
+        $updatedHistory = $this->client->getPromptHistory($this->promptName);
+
+        self::assertContains('replaced', $updatedHistory[0]['tags']);
+        self::assertContains('new', $updatedHistory[0]['tags']);
+        self::assertNotContains('initial', $updatedHistory[0]['tags']);
+    }
+
+    #[Test]
+    public function shouldMergePromptVersionTags(): void
+    {
+        self::assertNotNull($this->client);
+
+        $prompt = $this->client->createPrompt(
+            name: $this->promptName,
+            template: 'Hello {{name}}!',
+            tags: ['existing'],
+        );
+        $this->createdPromptIds[] = $prompt->id;
+
+        usleep(500000);
+
+        $history = $this->client->getPromptHistory($this->promptName);
+        $versionId = $history[0]['id'];
+
+        // Merge tags
+        $this->client->updatePromptVersionTags(
+            versionIds: [$versionId],
+            tags: ['merged'],
+            merge: true,
+        );
+
+        usleep(500000);
+
+        $updatedHistory = $this->client->getPromptHistory($this->promptName);
+
+        self::assertContains('existing', $updatedHistory[0]['tags']);
+        self::assertContains('merged', $updatedHistory[0]['tags']);
+    }
+
+    #[Test]
+    public function shouldVerifyTagsInPromptHistory(): void
+    {
+        self::assertNotNull($this->client);
+
+        $tags = ['staging', 'beta', 'reviewed'];
+
+        $prompt = $this->client->createPrompt(
+            name: $this->promptName,
+            template: 'Test with tags: {{var}}',
+            tags: $tags,
+        );
+        $this->createdPromptIds[] = $prompt->id;
+
+        usleep(500000);
+
+        $history = $this->client->getPromptHistory($this->promptName);
+
+        self::assertCount(1, $history);
+        self::assertArrayHasKey('tags', $history[0]);
+        self::assertCount(3, $history[0]['tags']);
+        self::assertContains('staging', $history[0]['tags']);
+        self::assertContains('beta', $history[0]['tags']);
+        self::assertContains('reviewed', $history[0]['tags']);
+    }
 }

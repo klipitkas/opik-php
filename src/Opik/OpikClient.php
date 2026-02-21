@@ -509,6 +509,7 @@ final class OpikClient
      * @param string|array<int, ChatMessage> $template The prompt template (string for text, ChatMessage array for chat)
      * @param string|null $description Optional description
      * @param array<string, mixed>|null $metadata Optional metadata
+     * @param array<int, string>|null $tags Optional tags for the prompt version
      *
      * @throws InvalidArgumentException If name or template is empty
      *
@@ -539,6 +540,7 @@ final class OpikClient
         string|array $template,
         ?string $description = null,
         ?array $metadata = null,
+        ?array $tags = null,
     ): Prompt {
         if (empty(trim($name))) {
             throw new InvalidArgumentException('Prompt name cannot be empty');
@@ -571,21 +573,33 @@ final class OpikClient
             $templateString = $template;
         }
 
-        $this->httpClient->post('v1/private/prompts', [
+        $promptData = [
             'id' => $id,
             'name' => $name,
             'description' => $description,
             'template_structure' => $isChat ? 'chat' : 'text',
-        ]);
+        ];
+
+        if ($tags !== null) {
+            $promptData['tags'] = $tags;
+        }
+
+        $this->httpClient->post('v1/private/prompts', $promptData);
+
+        $versionData = [
+            'id' => $versionId,
+            'prompt_id' => $id,
+            'template' => $templateString,
+            'metadata' => $metadata,
+        ];
+
+        if ($tags !== null) {
+            $versionData['tags'] = $tags;
+        }
 
         $this->httpClient->post('v1/private/prompts/versions', [
             'name' => $name,
-            'version' => [
-                'id' => $versionId,
-                'prompt_id' => $id,
-                'template' => $templateString,
-                'metadata' => $metadata,
-            ],
+            'version' => $versionData,
             'template_structure' => $isChat ? 'chat' : 'text',
         ]);
 
@@ -1084,6 +1098,38 @@ final class OpikClient
         }
 
         $this->httpClient->post('v1/private/prompts/delete', ['ids' => $ids]);
+    }
+
+    /**
+     * Update tags on prompt versions.
+     *
+     * @param array<int, string> $versionIds List of prompt version IDs to update
+     * @param array<int, string>|null $tags Tags to set or merge
+     * @param bool|null $merge If true, merge with existing tags; if false/null, replace
+     *
+     * @throws InvalidArgumentException If versionIds array is empty
+     */
+    public function updatePromptVersionTags(
+        array $versionIds,
+        ?array $tags = null,
+        ?bool $merge = null,
+    ): void {
+        if (empty($versionIds)) {
+            throw new InvalidArgumentException('Version IDs array cannot be empty');
+        }
+
+        $data = [
+            'ids' => $versionIds,
+            'update' => [
+                'tags' => $tags,
+            ],
+        ];
+
+        if ($merge !== null) {
+            $data['merge_tags'] = $merge;
+        }
+
+        $this->httpClient->patch('v1/private/prompts/versions', $data);
     }
 
     /**

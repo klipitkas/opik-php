@@ -387,4 +387,15 @@ final class OpikClientTest extends TestCase
 
         self::assertInstanceOf(AttachmentClient::class, $attachmentClient);
     }
+
+    #[Test]
+    public function shouldThrowOnEmptyVersionIdsForUpdateTags(): void
+    {
+        $client = new OpikClient(baseUrl: 'http://localhost:5173/api/');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Version IDs array cannot be empty');
+
+        $client->updatePromptVersionTags(versionIds: []);
+    }
 }

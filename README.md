@@ -488,6 +488,31 @@ $messages = $prompt->format(['domain' => 'physics', 'question' => 'What is gravi
 | `ChatMessage::assistant($content)` | Create an assistant message |
 | `ChatMessage::tool($content)` | Create a tool message |
 
+#### Prompt Tags
+
+```php
+// Create a prompt with tags
+$prompt = $client->createPrompt(
+    name: 'greeting',
+    template: 'Hello {{name}}!',
+    tags: ['production', 'v1'],
+);
+
+// Update tags on prompt versions (replace)
+$client->updatePromptVersionTags(
+    versionIds: [$versionId],
+    tags: ['staging', 'v2'],
+    merge: false,
+);
+
+// Merge tags with existing ones
+$client->updatePromptVersionTags(
+    versionIds: [$versionId],
+    tags: ['reviewed'],
+    merge: true,
+);
+```
+
 #### Prompt Versions
 
 ```php
@@ -693,6 +718,7 @@ The `evaluate()` function:
 | | `getPrompt(name)` | Get prompt |
 | | `getPrompts()` | List prompts |
 | | `getPromptHistory(name)` | Get versions |
+| | `updatePromptVersionTags(ids, tags, merge)` | Update version tags |
 | | `deletePrompts(ids)` | Delete prompts |
 | **Attachments** | `getAttachmentClient()` | Get attachment client |
 | **Evaluation** | `evaluate(dataset, task, ...)` | Run evaluation with metrics |

@@ -2,6 +2,18 @@
 
 All notable changes to the Opik PHP SDK will be documented in this file.
 
+## [0.20.0] - 2026-02-21
+
+### Added
+
+- Tags support for prompt versions:
+  - `tags` parameter on `createPrompt()` to set tags when creating prompts
+  - `updatePromptVersionTags()` method for replacing or merging tags on prompt versions
+  - `tags` property on `PromptVersion` entity with `fromArray()`/`toArray()` support
+- Unit tests for prompt version tags (6 new tests)
+- Unit test for `updatePromptVersionTags()` validation
+- Integration tests for prompt tags (4 new tests)
+
 ## [0.19.0] - 2025-12-18
 
 ### Added

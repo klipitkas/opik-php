@@ -192,4 +192,98 @@ final class PromptVersionTest extends TestCase
             'template_structure' => 'text',
         ], $array);
     }
+
+    #[Test]
+    public function shouldCreatePromptVersionWithTags(): void
+    {
+        $tags = ['production', 'v1'];
+
+        $version = new PromptVersion(
+            id: 'version-123',
+            promptId: 'prompt-456',
+            commit: 'abc123',
+            template: 'Hello {{name}}!',
+            tags: $tags,
+        );
+
+        self::assertSame($tags, $version->tags);
+    }
+
+    #[Test]
+    public function shouldDefaultTagsToNull(): void
+    {
+        $version = new PromptVersion(
+            id: 'version-123',
+            promptId: 'prompt-456',
+            commit: 'abc123',
+            template: 'Hello!',
+        );
+
+        self::assertNull($version->tags);
+    }
+
+    #[Test]
+    public function shouldCreateFromArrayWithTags(): void
+    {
+        $data = [
+            'id' => 'version-123',
+            'prompt_id' => 'prompt-456',
+            'commit' => 'abc123',
+            'template' => 'Hello!',
+            'type' => 'text',
+            'template_structure' => 'text',
+            'tags' => ['staging', 'latest'],
+        ];
+
+        $version = PromptVersion::fromArray($data);
+
+        self::assertSame(['staging', 'latest'], $version->tags);
+    }
+
+    #[Test]
+    public function shouldCreateFromArrayWithoutTags(): void
+    {
+        $data = [
+            'id' => 'version-123',
+            'prompt_id' => 'prompt-456',
+            'commit' => 'abc123',
+            'template' => 'Hello!',
+        ];
+
+        $version = PromptVersion::fromArray($data);
+
+        self::assertNull($version->tags);
+    }
+
+    #[Test]
+    public function shouldIncludeTagsInToArray(): void
+    {
+        $version = new PromptVersion(
+            id: 'version-123',
+            promptId: 'prompt-456',
+            commit: 'abc123',
+            template: 'Hello!',
+            tags: ['production'],
+        );
+
+        $array = $version->toArray();
+
+        self::assertArrayHasKey('tags', $array);
+        self::assertSame(['production'], $array['tags']);
+    }
+
+    #[Test]
+    public function shouldExcludeTagsFromToArrayWhenNull(): void
+    {
+        $version = new PromptVersion(
+            id: 'version-123',
+            promptId: 'prompt-456',
+            commit: 'abc123',
+            template: 'Hello!',
+        );
+
+        $array = $version->toArray();
+
+        self::assertArrayNotHasKey('tags', $array);
+    }
 }

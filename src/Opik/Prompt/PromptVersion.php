@@ -26,8 +26,12 @@ final class PromptVersion
 
     public readonly TemplateStructure $templateStructure;
 
+    /** @var array<int, string>|null */
+    public readonly ?array $tags;
+
     /**
      * @param string|array<int, array<string, mixed>> $template
+     * @param array<int, string>|null $tags
      */
     public function __construct(
         string $id,
@@ -36,6 +40,7 @@ final class PromptVersion
         string|array $template,
         PromptType $type = PromptType::TEXT,
         TemplateStructure $templateStructure = TemplateStructure::TEXT,
+        ?array $tags = null,
     ) {
         $this->id = $id;
         $this->promptId = $promptId;
@@ -43,6 +48,7 @@ final class PromptVersion
         $this->template = $template;
         $this->type = $type;
         $this->templateStructure = $templateStructure;
+        $this->tags = $tags;
     }
 
     /**
@@ -72,6 +78,7 @@ final class PromptVersion
             template: $template,
             type: isset($data['type']) ? PromptType::from($data['type']) : PromptType::TEXT,
             templateStructure: $templateStructure,
+            tags: $data['tags'] ?? null,
         );
     }
 
@@ -158,7 +165,7 @@ final class PromptVersion
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'prompt_id' => $this->promptId,
             'commit' => $this->commit,
@@ -166,5 +173,11 @@ final class PromptVersion
             'type' => $this->type->value,
             'template_structure' => $this->templateStructure->value,
         ];
+
+        if ($this->tags !== null) {
+            $data['tags'] = $this->tags;
+        }
+
+        return $data;
     }
 }
